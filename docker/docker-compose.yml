@@ -1,0 +1,140 @@
+version: "3.9"
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-user}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?must set POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB:-collab_ide}
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-user}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - internal
+
+  redis:
+    image: redis:7-alpine
+    restart: unless-stopped
+    command: ["redis-server", "--save", "", "--appendonly", "no"]
+    # Yjs sync and recording-state are pub/sub + ephemeral-key only (see
+    # backend/src/modules/yjs-server/redis.sync.ts and sessions.service.ts) —
+    # nothing here needs to survive a Redis restart, so persistence is
+    # deliberately disabled rather than adding a volume for no benefit.
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - internal
+
+  backend:
+    build:
+      context: ../backend
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    environment:
+      NODE_ENV: production
+      PORT: 4000
+      DATABASE_URL: postgresql://${POSTGRES_USER:-user}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB:-collab_ide}
+      REDIS_URL: redis://redis:6379
+      JWT_ACCESS_SECRET: ${JWT_ACCESS_SECRET:?must set JWT_ACCESS_SECRET}
+      JWT_REFRESH_SECRET: ${JWT_REFRESH_SECRET:?must set JWT_REFRESH_SECRET}
+      ACCESS_TOKEN_TTL: 15m
+      REFRESH_TOKEN_TTL: 7d
+      CLIENT_URL: ${CLIENT_URL:?must set CLIENT_URL}
+      MAX_TERMINAL_SESSIONS: 50
+      TERMINAL_IDLE_TIMEOUT_MS: 600000
+    ports:
+      - "4000:4000"
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+    healthcheck:
+      test: ["CMD", "wget", "--spider", "-q", "http://localhost:4000/health"]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+    networks:
+      - internal
+    # NOTE on horizontal scaling: the backend code is now multi-replica-safe
+    # (Yjs state syncs via Redis pub/sub, recording state is Redis-backed —
+    # see redis.sync.ts and sessions.service.ts). However `docker compose up
+    # --scale backend=N` alone does NOT give you a working load-balanced
+    # deployment: this file publishes backend's port directly (`ports:
+    # "4000:4000"`), which conflicts across replicas, and compose has no
+    # built-in HTTP/WebSocket load balancer. Real horizontal scaling needs a
+    # reverse proxy or orchestrator in front of multiple backend instances
+    # (e.g. an nginx/Traefik upstream, or a Kubernetes Service) — this
+    # compose file demonstrates the single-replica case only. The backend
+    # code itself no longer assumes single-replica.
+
+  frontend:
+    build:
+      context: ../frontend
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    depends_on:
+      - backend
+    ports:
+      - "80:80"
+    networks:
+      - internal
+
+  # Each of these builds one runtime's sandbox image and exits immediately
+  # (entrypoint: ["true"]) — they exist purely so `docker compose build`
+  # produces every image docker.runner.ts/runtimes.ts can request by tag.
+  # Image tags here MUST match backend/src/modules/execution/runtimes.ts
+  # exactly, or container creation fails with "no such image".
+  executor-shell-builder:
+    build:
+      context: ..
+      dockerfile: docker/executor.shell.Dockerfile
+    image: collab-ide-executor-shell:latest
+    entrypoint: ["true"]
+    networks:
+      - internal
+
+  executor-node-builder:
+    build:
+      context: ..
+      dockerfile: docker/executor.node.Dockerfile
+    image: collab-ide-executor-node:latest
+    entrypoint: ["true"]
+    networks:
+      - internal
+
+  executor-python-builder:
+    build:
+      context: ..
+      dockerfile: docker/executor.python.Dockerfile
+    image: collab-ide-executor-python:latest
+    entrypoint: ["true"]
+    networks:
+      - internal
+
+  executor-go-builder:
+    build:
+      context: ..
+      dockerfile: docker/executor.go.Dockerfile
+    image: collab-ide-executor-go:latest
+    entrypoint: ["true"]
+    networks:
+      - internal
+
+networks:
+  internal:
+    driver: bridge
+
+volumes:
+  pgdata:

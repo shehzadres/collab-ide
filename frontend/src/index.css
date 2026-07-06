@@ -1,0 +1,94 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --c-bg: #0d0d0f;
+  --c-bg-elevated: #18181b;
+  --c-bg-panel: #131315;
+  --c-bg-hover: #1f1f23;
+  --c-bg-active: #26262b;
+  --c-border-subtle: #1e1e22;
+  --c-border: #2b2b30;
+  --c-text: #e7e6e4;
+  --c-text-muted: #9b9a9f;
+  --c-text-faint: #636166;
+  --c-accent: #5fb98f;
+  --c-accent-hover: #4ea67d;
+  --c-accent-text: #06120d;
+  --c-success: #5fb98f;
+  --c-warning: #d9a441;
+  --c-danger: #e0616b;
+  --c-info: #6fa8dc;
+}
+
+html,
+body,
+#root {
+  height: 100%;
+}
+
+body {
+  margin: 0;
+  background-color: var(--c-bg);
+  color: var(--c-text);
+  font-family: "IBM Plex Sans", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+code,
+kbd,
+samp,
+pre {
+  font-family: "IBM Plex Mono", SFMono-Regular, Menlo, Consolas, monospace;
+}
+
+* {
+  border-color: var(--c-border);
+}
+
+::selection {
+  background-color: color-mix(in srgb, var(--c-accent) 35%, transparent);
+}
+
+/* Visible, consistent keyboard focus everywhere — never suppressed. */
+:focus-visible {
+  outline: 2px solid var(--c-accent);
+  outline-offset: 1px;
+  border-radius: 2px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+  }
+}
+
+/* Slim, low-contrast scrollbars that match panel chrome instead of the OS default */
+::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background-color: var(--c-border);
+  border-radius: 999px;
+  border: 2px solid transparent;
+  background-clip: content-box;
+}
+::-webkit-scrollbar-thumb:hover {
+  background-color: var(--c-text-faint);
+  background-clip: content-box;
+}
+
+html {
+  scrollbar-width: thin;
+  scrollbar-color: var(--c-border) transparent;
+}

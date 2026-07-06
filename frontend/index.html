@@ -1,0 +1,29 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Collab IDE</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap"
+      rel="stylesheet"
+    />
+    <script>
+      // Apply the stored theme's background before React mounts, so the
+      // first paint doesn't flash the fallback color from index.css.
+      (function () {
+        try {
+          var id = localStorage.getItem("collab-ide:theme") || "dark";
+          var bg = { dark: "#0d0d0f", light: "#fbfbfa", midnight: "#000000", solarized: "#002b36" }[id] || "#0d0d0f";
+          document.documentElement.style.backgroundColor = bg;
+        } catch (e) {}
+      })();
+    </script>
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>
