@@ -1,0 +1,154 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  ADMIN
+  OWNER
+  EDITOR
+  VIEWER
+}
+
+model User {
+  id            String             @id @default(uuid())
+  email         String             @unique
+  username      String             @unique
+  passwordHash  String
+  role          Role               @default(EDITOR)
+  refreshToken  String?
+  files         File[]
+  recordings    SessionRecording[]
+  memberships   SessionMember[]
+  sentInvites   SessionInvite[]    @relation("InviteCreatedBy")
+  createdAt     DateTime           @default(now())
+  updatedAt     DateTime           @updatedAt
+}
+
+// Per-session role — this is the real authorization boundary the app checks
+// against for session-scoped actions (file edits, recording control,
+// member management), distinct from User.role which is a coarse
+// platform-wide flag (e.g. a platform ADMIN who can administer the whole
+// deployment regardless of which sessions they happen to belong to).
+model SessionMember {
+  id        String   @id @default(uuid())
+  sessionId String
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  role      Role     @default(EDITOR)
+  joinedAt  DateTime @default(now())
+
+  @@unique([sessionId, userId])
+  @@index([sessionId])
+  @@index([userId])
+}
+
+// A shareable link that grants a fixed role to whoever redeems it.
+// maxUses=null means unlimited; expiresAt=null means never expires.
+model SessionInvite {
+  id          String    @id @default(uuid())
+  sessionId   String
+  token       String    @unique @default(uuid())
+  role        Role      @default(EDITOR)
+  createdById String
+  createdBy   User      @relation("InviteCreatedBy", fields: [createdById], references: [id])
+  maxUses     Int?
+  useCount    Int       @default(0)
+  expiresAt   DateTime?
+  revokedAt   DateTime?
+  createdAt   DateTime  @default(now())
+
+  @@index([sessionId])
+  @@index([token])
+}
+
+model File {
+  id        String   @id @default(uuid())
+  name      String
+  path      String
+  isFolder  Boolean  @default(false)
+  parentId  String?
+  parent    File?    @relation("FileToFile", fields: [parentId], references: [id], onDelete: Cascade)
+  children  File[]   @relation("FileToFile")
+  content   String   @default("")
+  sessionId String
+  ownerId   String
+  owner     User     @relation(fields: [ownerId], references: [id])
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([sessionId])
+  @@index([parentId])
+  @@unique([sessionId, path])
+}
+
+enum RuntimeId {
+  SHELL
+  NODE
+  PYTHON
+  GO
+}
+
+// One row per session, created lazily on first terminal connection or first
+// explicit runtime selection. This is the durable record of "what container
+// backs this session's terminal" — containerName is a deterministic,
+// sessionId-derived Docker container name (not a random per-connection one),
+// which is what makes persistent workspaces possible: any backend replica
+// can look up the same container by name via the shared Docker daemon,
+// regardless of which replica originally created it.
+model Workspace {
+  id                String    @id @default(uuid())
+  sessionId         String    @unique
+  runtime           RuntimeId @default(SHELL)
+  containerName     String?
+  // Network access inside the sandbox is OFF by default (NetworkMode: none)
+  // for safety — package installs need real internet access to reach a
+  // registry, and Docker has no built-in way to allowlist just
+  // registry.npmjs.org / pypi.org without an egress proxy sidecar (not
+  // built here). Enabling this is a real, visible security trade-off the
+  // session owner opts into, not a silent default.
+  networkEnabled    Boolean   @default(false)
+  lastActiveAt      DateTime  @default(now())
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @updatedAt
+
+  @@index([sessionId])
+}
+
+enum RecordingEventType {
+  YJS_UPDATE
+  YJS_SNAPSHOT
+  AWARENESS
+  TERMINAL_OUTPUT
+  TERMINAL_INPUT
+  FILE_OPEN
+}
+
+model SessionRecording {
+  id          String             @id @default(uuid())
+  sessionId   String
+  startedAt   DateTime           @default(now())
+  endedAt     DateTime?
+  startedById String
+  startedBy   User               @relation(fields: [startedById], references: [id])
+  events      RecordingEvent[]
+
+  @@index([sessionId])
+}
+
+model RecordingEvent {
+  id          String             @id @default(uuid())
+  recordingId String
+  recording   SessionRecording   @relation(fields: [recordingId], references: [id], onDelete: Cascade)
+  type        RecordingEventType
+  fileId      String?
+  payload     Bytes
+  offsetMs    Int
+  createdAt   DateTime           @default(now())
+
+  @@index([recordingId, offsetMs])
+}
