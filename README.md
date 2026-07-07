@@ -29,9 +29,9 @@
 <br/>
 
 [![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen?style=flat-square)](CONTRIBUTING.md)
-[![Last Commit](https://img.shields.io/github/last-commit/YOUR_GITHUB_USERNAME/collab-ide?style=flat-square)](https://github.com/YOUR_GITHUB_USERNAME/collab-ide/commits/main)
-[![Stars](https://img.shields.io/github/stars/YOUR_GITHUB_USERNAME/collab-ide?style=flat-square)](https://github.com/YOUR_GITHUB_USERNAME/collab-ide/stargazers)
-[![Issues](https://img.shields.io/github/issues/YOUR_GITHUB_USERNAME/collab-ide?style=flat-square)](https://github.com/YOUR_GITHUB_USERNAME/collab-ide/issues)
+[![Last Commit](https://img.shields.io/github/last-commit/shehzadres/collab-ide?style=flat-square)](https://github.com/shehzadres/collab-ide/commits/main)
+[![Stars](https://img.shields.io/github/stars/shehzadres/collab-ide?style=flat-square)](https://github.com/shehzadres/collab-ide/stargazers)
+[![Issues](https://img.shields.io/github/issues/shehzadres/collab-ide?style=flat-square)](https://github.com/shehzadres/collab-ide/issues)
 [![Build](https://img.shields.io/badge/build-passing-22c55e?style=flat-square&logo=githubactions&logoColor=white)](#)
 
 <br/>
