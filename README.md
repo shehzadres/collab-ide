@@ -18,19 +18,11 @@
 
 
 
-> \*\*A production-grade, browser-based collaborative code editor.\*\*
-
-
+\*\*A production-grade, browser-based collaborative code editor.\*\*
 
 Real-time CRDT Synchronization • Multi-cursor Presence • Sandboxed Multi-language Execution • Session Recording \& Replay • Role-based Access Control
 
 
-
-\---
-
-
-
-\## ⚡ Tech Stack
 
 
 
@@ -52,12 +44,6 @@ Real-time CRDT Synchronization • Multi-cursor Presence • Sandboxed Multi-lan
 
 
 
-\---
-
-
-
-\## 📊 Project Status
-
 
 
 \[!\[License](https://img.shields.io/github/license/shehzadres/collab-ide?style=for-the-badge)](LICENSE)
@@ -72,14 +58,6 @@ Real-time CRDT Synchronization • Multi-cursor Presence • Sandboxed Multi-lan
 
 
 
-\---
-
-
-
-\## 🔗 Quick Links
-
-
-
 \[!\[Live Demo](https://img.shields.io/badge/Live-Demo-success?style=for-the-badge)](https://your-live-demo.vercel.app)
 
 \[!\[Documentation](https://img.shields.io/badge/Documentation-blue?style=for-the-badge)](https://yourdomain.dev/docs)
@@ -89,6 +67,8 @@ Real-time CRDT Synchronization • Multi-cursor Presence • Sandboxed Multi-lan
 \[!\[Request Feature](https://img.shields.io/badge/Request-Feature-purple?style=for-the-badge)](https://github.com/shehzadres/collab-ide/issues)
 
 \[!\[PRs Welcome](https://img.shields.io/badge/PRs-Welcome-brightgreen?style=for-the-badge)](CONTRIBUTING.md)
+
+
 
 \---
 
