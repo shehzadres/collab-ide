@@ -40,15 +40,25 @@
 
 <p align="center">
 
+&#x20; <a href="https://react.dev"><img src="https://img.shields.io/badge/React-61DAFB?style=flat-square\&logo=react\&logoColor=white" alt="React"></a>
 
+&#x20; <a href="https://www.typescriptlang.org"><img src="https://img.shields.io/badge/TypeScript-3178C6?style=flat-square\&logo=typescript\&logoColor=white" alt="TypeScript"></a>
 
-\[!\[](https://img.shields.io/badge/React-61DAFB?style=flat-square\&logo=react\&logoColor=white)](https://react.dev) \[!\[](https://img.shields.io/badge/TypeScript-3178C6?style=flat-square\&logo=typescript\&logoColor=white)](https://www.typescriptlang.org) \[!\[](https://img.shields.io/badge/Node.js-339933?style=flat-square\&logo=nodedotjs\&logoColor=white)](https://nodejs.org) \[!\[](https://img.shields.io/badge/Express-000000?style=flat-square\&logo=express\&logoColor=white)](https://expressjs.com) \[!\[](https://img.shields.io/badge/PostgreSQL-4169E1?style=flat-square\&logo=postgresql\&logoColor=white)](https://postgresql.org) \[!\[](https://img.shields.io/badge/Redis-DC382D?style=flat-square\&logo=redis\&logoColor=white)](https://redis.io) \[!\[](https://img.shields.io/badge/Docker-2496ED?style=flat-square\&logo=docker\&logoColor=white)](https://docker.com) \[!\[](https://img.shields.io/badge/Monaco-007ACC?style=flat-square\&logo=visualstudiocode\&logoColor=white)](https://microsoft.github.io/monaco-editor/) \[!\[](https://img.shields.io/badge/Yjs-FFB300?style=flat-square)](https://yjs.dev)
+&#x20; <a href="https://nodejs.org"><img src="https://img.shields.io/badge/Node.js-339933?style=flat-square\&logo=nodedotjs\&logoColor=white" alt="Node.js"></a>
 
+&#x20; <a href="https://expressjs.com"><img src="https://img.shields.io/badge/Express-000000?style=flat-square\&logo=express\&logoColor=white" alt="Express"></a>
 
+&#x20; <a href="https://www.postgresql.org"><img src="https://img.shields.io/badge/PostgreSQL-4169E1?style=flat-square\&logo=postgresql\&logoColor=white" alt="PostgreSQL"></a>
 
-</p>
+&#x20; <a href="https://redis.io"><img src="https://img.shields.io/badge/Redis-DC382D?style=flat-square\&logo=redis\&logoColor=white" alt="Redis"></a>
 
-\---
+&#x20; <a href="https://www.docker.com"><img src="https://img.shields.io/badge/Docker-2496ED?style=flat-square\&logo=docker\&logoColor=white" alt="Docker"></a>
+
+&#x20; <a href="https://microsoft.github.io/monaco-editor/"><img src="https://img.shields.io/badge/Monaco-007ACC?style=flat-square\&logo=visualstudiocode\&logoColor=white" alt="Monaco"></a>
+
+&#x20; <a href="https://yjs.dev"><img src="https://img.shields.io/badge/Yjs-FFB300?style=flat-square" alt="Yjs"></a>
+
+</p>---
 
 ## Table of Contents
 
