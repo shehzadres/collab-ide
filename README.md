@@ -1,58 +1,49 @@
-\## Collab IDE
+<div align="center">
 
+<img src="./assets/images/logo.svg" alt="Collab IDE Logo" width="96" />
 
+<img src="./assets/images/banner.png" alt="Collab IDE Banner" width="100%" />
 
-A production-grade, browser-based collaborative code editor.\*\*
+# Collab IDE
 
-Real-time CRDT Synchronization • Multi-cursor Presence • Sandboxed Multi-language Execution • Session Recording \& Replay • Role-based Access Control
+**A production-grade, browser-based collaborative code editor.**
 
+Real-time CRDT synchronization · Multi-cursor presence · Sandboxed multi-language execution · Session recording \& replay · Role-based access control
 
+<br />
 
+[!\[License](https://img.shields.io/badge/license-MIT-blue.svg?style=for-the-badge)](#license)
+[!\[React](https://img.shields.io/badge/React-18-61DAFB?style=for-the-badge\&logo=react\&logoColor=white)](https://react.dev)
+[!\[TypeScript](https://img.shields.io/badge/TypeScript-5-3178C6?style=for-the-badge\&logo=typescript\&logoColor=white)](https://www.typescriptlang.org)
+[!\[Node.js](https://img.shields.io/badge/Node.js-20-339933?style=for-the-badge\&logo=nodedotjs\&logoColor=white)](https://nodejs.org)
+[!\[Express](https://img.shields.io/badge/Express-4-000000?style=for-the-badge\&logo=express\&logoColor=white)](https://expressjs.com)
+[!\[PostgreSQL](https://img.shields.io/badge/PostgreSQL-16-4169E1?style=for-the-badge\&logo=postgresql\&logoColor=white)](https://www.postgresql.org)
+[!\[Redis](https://img.shields.io/badge/Redis-7-DC382D?style=for-the-badge\&logo=redis\&logoColor=white)](https://redis.io)
+[!\[Docker](https://img.shields.io/badge/Docker-24-2496ED?style=for-the-badge\&logo=docker\&logoColor=white)](https://www.docker.com)
+[!\[Monaco Editor](https://img.shields.io/badge/Monaco-VS%20Code%20Engine-007ACC?style=for-the-badge\&logo=visualstudiocode\&logoColor=white)](https://microsoft.github.io/monaco-editor/)
+[!\[Yjs](https://img.shields.io/badge/Yjs-CRDT-F5A623?style=for-the-badge)](https://yjs.dev)
 
+<br />
 
-\[!\[React](https://img.shields.io/badge/React-61DAFB?style=for-the-badge\&logo=react)](https://react.dev)!\[TypeScript](https://img.shields.io/badge/TypeScript-3178C6?style=for-the-badge\&logo=typescript\&logoColor=white)
+[!\[Live Demo](https://img.shields.io/badge/Live%20Demo-Visit%20Now-22c55e?style=flat-square\&logo=vercel\&logoColor=white)](https://your-live-demo.vercel.app)
+[!\[Documentation](https://img.shields.io/badge/Docs-Read%20Now-6366f1?style=flat-square\&logo=readthedocs\&logoColor=white)](https://yourdomain.dev/docs)
+[!\[Version](https://img.shields.io/github/package-json/v/yourusername/collab-ide?style=flat-square\&label=version)](https://github.com/yourusername/collab-ide/releases)
+[!\[Build Status](https://img.shields.io/github/actions/workflow/status/yourusername/collab-ide/ci.yml?style=flat-square\&label=build)](https://github.com/yourusername/collab-ide/actions)
+[!\[GitHub Stars](https://img.shields.io/github/stars/yourusername/collab-ide?style=flat-square\&logo=github\&color=yellow)](https://github.com/yourusername/collab-ide/stargazers)
+[!\[GitHub Forks](https://img.shields.io/github/forks/yourusername/collab-ide?style=flat-square\&logo=github)](https://github.com/yourusername/collab-ide/network/members)
+[!\[Issues](https://img.shields.io/github/issues/yourusername/collab-ide?style=flat-square)](https://github.com/yourusername/collab-ide/issues)
+[!\[Last Commit](https://img.shields.io/github/last-commit/yourusername/collab-ide?style=flat-square)](https://github.com/yourusername/collab-ide/commits)
+[!\[PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg?style=flat-square)](CONTRIBUTING.md)
 
-!\[Node.js](https://img.shields.io/badge/Node.js-339933?style=for-the-badge\&logo=nodedotjs\&logoColor=white)
+<br />
 
-!\[Express](https://img.shields.io/badge/Express-000000?style=for-the-badge\&logo=express\&logoColor=white)
+<img src="./assets/demo/collab-demo.gif" alt="Collab IDE Demo" width="900" />
 
-!\[PostgreSQL](https://img.shields.io/badge/PostgreSQL-316192?style=for-the-badge\&logo=postgresql\&logoColor=white)
+<br />
 
-!\[Redis](https://img.shields.io/badge/Redis-D82C20?style=for-the-badge\&logo=redis\&logoColor=white)
+[Live Demo](https://your-live-demo.vercel.app) · [Documentation](https://yourdomain.dev/docs) · [Report a Bug](https://github.com/yourusername/collab-ide/issues) · [Request a Feature](https://github.com/yourusername/collab-ide/issues) · [Watch the Demo](https://youtube.com/watch?v=YOUR_VIDEO_ID)
 
-!\[Docker](https://img.shields.io/badge/Docker-2496ED?style=for-the-badge\&logo=docker\&logoColor=white)
-
-!\[Monaco Editor](https://img.shields.io/badge/Monaco-007ACC?style=for-the-badge\&logo=visualstudiocode\&logoColor=white)
-
-!\[Yjs](https://img.shields.io/badge/Yjs-FFB300?style=for-the-badge)
-
-
-
-
-
-\[!\[License](https://img.shields.io/github/license/shehzadres/collab-ide?style=for-the-badge)](LICENSE)
-
-\[!\[Stars](https://img.shields.io/github/stars/shehzadres/collab-ide?style=for-the-badge)](https://github.com/shehzadres/collab-ide/stargazers)
-
-\[!\[Forks](https://img.shields.io/github/forks/shehzadres/collab-ide?style=for-the-badge)](https://github.com/shehzadres/collab-ide/network/members)
-
-\[!\[Issues](https://img.shields.io/github/issues/shehzadres/collab-ide?style=for-the-badge)](https://github.com/shehzadres/collab-ide/issues)
-
-\[!\[Last Commit](https://img.shields.io/github/last-commit/shehzadres/collab-ide?style=for-the-badge)](https://github.com/shehzadres/collab-ide/commits/main)
-
-
-
-\[!\[Live Demo](https://img.shields.io/badge/Live-Demo-success?style=for-the-badge)](https://your-live-demo.vercel.app)
-
-\[!\[Documentation](https://img.shields.io/badge/Documentation-blue?style=for-the-badge)](https://yourdomain.dev/docs)
-
-\[!\[Report Bug](https://img.shields.io/badge/Report-Bug-red?style=for-the-badge)](https://github.com/shehzadres/collab-ide/issues)
-
-\[!\[Request Feature](https://img.shields.io/badge/Request-Feature-purple?style=for-the-badge)](https://github.com/shehzadres/collab-ide/issues)
-
-\[!\[PRs Welcome](https://img.shields.io/badge/PRs-Welcome-brightgreen?style=for-the-badge)](CONTRIBUTING.md)
-
-
+</div>
 
 \---
 
@@ -191,6 +182,14 @@ Most collaborative coding tools are either cloud-locked, oversimplified, or don'
 
 !\[Terminal](./assets/screenshots/terminal.png)
 
+**Session Replay — Scrubber \& Playback Controls**
+
+!\[Replay](./assets/screenshots/replay.png)
+
+**Workspace Settings — Runtime Picker \& Network Toggle**
+
+!\[Settings](./assets/screenshots/settings.png)
+
 **Members \& Invite Management**
 
 !\[Members](./assets/screenshots/members.png)
@@ -235,7 +234,7 @@ Browser
 <img src="./assets/diagrams/architecture.png" alt="Architecture Diagram" width="860" />
 
 <details>
-<summary><strong>Backend \\\\\\\\\\\\\\\& frontend layer diagrams</strong></summary>
+<summary><strong>Backend \& frontend layer diagrams</strong></summary>
 
 <br />
 
@@ -334,7 +333,7 @@ The JWT access token lives in JavaScript memory (Zustand store). The refresh tok
 
 ```
 collab-ide/
-├── .env.example                    Root compose vars (Postgres creds, JWT secrets, CLIENT\\\\\\\\\\\\\\\_URL)
+├── .env.example                    Root compose vars (Postgres creds, JWT secrets, CLIENT\_URL)
 ├── .dockerignore
 ├── README.md
 │
@@ -373,7 +372,7 @@ collab-ide/
 │           └── terminal.socket.ts  Per-session Docker container attach/detach
 │
 ├── frontend/
-│   ├── .env.example                3 VITE\\\\\\\\\\\\\\\_ vars
+│   ├── .env.example                3 VITE\_ vars
 │   ├── Dockerfile                  Build → nginx static serve
 │   ├── nginx.conf                  SPA fallback, gzip, asset cache headers
 │   ├── package.json
@@ -460,11 +459,11 @@ cp frontend/.env.example frontend/.env
 Edit `backend/.env` — at minimum, set these four values:
 
 ```env
-DATABASE\\\\\\\\\\\\\\\_URL=postgresql://postgres:postgres@localhost:5432/collab\\\\\\\\\\\\\\\_ide
-REDIS\\\\\\\\\\\\\\\_URL=redis://localhost:6379
-JWT\\\\\\\\\\\\\\\_ACCESS\\\\\\\\\\\\\\\_SECRET=<generate — see below>
-JWT\\\\\\\\\\\\\\\_REFRESH\\\\\\\\\\\\\\\_SECRET=<generate — must differ from ACCESS\\\\\\\\\\\\\\\_SECRET>
-CLIENT\\\\\\\\\\\\\\\_URL=http://localhost:5173
+DATABASE\_URL=postgresql://postgres:postgres@localhost:5432/collab\_ide
+REDIS\_URL=redis://localhost:6379
+JWT\_ACCESS\_SECRET=<generate — see below>
+JWT\_REFRESH\_SECRET=<generate — must differ from ACCESS\_SECRET>
+CLIENT\_URL=http://localhost:5173
 ```
 
 Generate secrets (run twice — one for each):
@@ -478,10 +477,10 @@ node -e "console.log(require('crypto').randomBytes(48).toString('hex'))"
 If you already have them running locally, skip this step. Otherwise, spin up just the database and cache via Docker Compose:
 
 ```bash
-cd docker \\\\\\\\\\\\\\\&\\\\\\\\\\\\\\\& docker compose --env-file ../.env up postgres redis -d \\\\\\\\\\\\\\\&\\\\\\\\\\\\\\\& cd ..
+cd docker \&\& docker compose --env-file ../.env up postgres redis -d \&\& cd ..
 ```
 
-> \\\\\\\\\\\\\\\*\\\\\\\\\\\\\\\*Note:\\\\\\\\\\\\\\\*\\\\\\\\\\\\\\\* `--env-file ../.env` is required here. Docker Compose only auto-loads a `.env` from its own working directory, and the file created in step 1 lives at the repo root.
+> \*\*Note:\*\* `--env-file ../.env` is required here. Docker Compose only auto-loads a `.env` from its own working directory, and the file created in step 1 lives at the repo root.
 
 **3. Build the sandbox executor images**
 
@@ -522,7 +521,7 @@ Open [http://localhost:5173](http://localhost:5173).
 
 ```bash
 cp .env.example .env
-# Fill in: POSTGRES\\\\\\\\\\\\\\\_PASSWORD, JWT\\\\\\\\\\\\\\\_ACCESS\\\\\\\\\\\\\\\_SECRET, JWT\\\\\\\\\\\\\\\_REFRESH\\\\\\\\\\\\\\\_SECRET, CLIENT\\\\\\\\\\\\\\\_URL
+# Fill in: POSTGRES\_PASSWORD, JWT\_ACCESS\_SECRET, JWT\_REFRESH\_SECRET, CLIENT\_URL
 
 cd docker
 docker compose --env-file ../.env build    # builds backend, frontend, all 4 executor images
@@ -553,7 +552,7 @@ docker compose --env-file ../.env exec backend npx prisma migrate deploy
 5. Build all 4 executor images on the Docker host(s) where the backend will run
 6. Set all required env vars (see [Environment Variables](#environment-variables))
 
-> \\\\\\\\\\\\\\\*\\\\\\\\\\\\\\\*Important for multi-replica backend deployments:\\\\\\\\\\\\\\\*\\\\\\\\\\\\\\\* The Docker daemon must be reachable from every backend replica (same host or shared socket). Terminal containers are created and attached on the same Docker host — this is not a distributed container scheduler. See \\\\\\\\\\\\\\\[Known Limitations](#known-limitations) for details.
+> \*\*Important for multi-replica backend deployments:\*\* The Docker daemon must be reachable from every backend replica (same host or shared socket). Terminal containers are created and attached on the same Docker host — this is not a distributed container scheduler. See \[Known Limitations](#known-limitations) for details.
 
 \---
 
@@ -565,12 +564,12 @@ docker compose --env-file ../.env exec backend npx prisma migrate deploy
 <br />
 
 ```env
-POSTGRES\\\\\\\\\\\\\\\_USER=collab\\\\\\\\\\\\\\\_ide\\\\\\\\\\\\\\\_user
-POSTGRES\\\\\\\\\\\\\\\_PASSWORD=           # required — no default
-POSTGRES\\\\\\\\\\\\\\\_DB=collab\\\\\\\\\\\\\\\_ide
-JWT\\\\\\\\\\\\\\\_ACCESS\\\\\\\\\\\\\\\_SECRET=           # required — generate: node -e "console.log(require('crypto').randomBytes(48).toString('hex'))"
-JWT\\\\\\\\\\\\\\\_REFRESH\\\\\\\\\\\\\\\_SECRET=          # required — must differ from ACCESS\\\\\\\\\\\\\\\_SECRET
-CLIENT\\\\\\\\\\\\\\\_URL=                  # required — e.g. http://localhost or https://your-domain.com
+POSTGRES\_USER=collab\_ide\_user
+POSTGRES\_PASSWORD=           # required — no default
+POSTGRES\_DB=collab\_ide
+JWT\_ACCESS\_SECRET=           # required — generate: node -e "console.log(require('crypto').randomBytes(48).toString('hex'))"
+JWT\_REFRESH\_SECRET=          # required — must differ from ACCESS\_SECRET
+CLIENT\_URL=                  # required — e.g. http://localhost or https://your-domain.com
 ```
 
 </details>
@@ -582,17 +581,17 @@ CLIENT\\\\\\\\\\\\\\\_URL=                  # required — e.g. http://localhost
 
 |Variable|Default|Required|Description|
 |-|-|-|-|
-|`NODE\\\\\\\\\\\\\\\_ENV`|`development`|No|Set to `production` for prod|
+|`NODE\_ENV`|`development`|No|Set to `production` for prod|
 |`PORT`|`4000`|No|HTTP server port|
-|`DATABASE\\\\\\\\\\\\\\\_URL`|—|**Yes**|PostgreSQL connection string|
-|`REDIS\\\\\\\\\\\\\\\_URL`|—|**Yes**|Redis connection string, e.g. `redis://localhost:6379`|
-|`JWT\\\\\\\\\\\\\\\_ACCESS\\\\\\\\\\\\\\\_SECRET`|—|**Yes**|Min 32 chars in production|
-|`JWT\\\\\\\\\\\\\\\_REFRESH\\\\\\\\\\\\\\\_SECRET`|—|**Yes**|Min 32 chars; must differ from access secret|
-|`ACCESS\\\\\\\\\\\\\\\_TOKEN\\\\\\\\\\\\\\\_TTL`|`15m`|No|Access token lifetime|
-|`REFRESH\\\\\\\\\\\\\\\_TOKEN\\\\\\\\\\\\\\\_TTL`|`7d`|No|Refresh token lifetime|
-|`CLIENT\\\\\\\\\\\\\\\_URL`|—|**Yes**|Allowed CORS origin (comma-separated for multiple)|
-|`MAX\\\\\\\\\\\\\\\_TERMINAL\\\\\\\\\\\\\\\_SESSIONS`|`50`|No|Max concurrent terminal container connections|
-|`TERMINAL\\\\\\\\\\\\\\\_IDLE\\\\\\\\\\\\\\\_TIMEOUT\\\\\\\\\\\\\\\_MS`|`600000`|No|WS idle timeout (10 min). Closes the WebSocket connection, but does **not** destroy the container.|
+|`DATABASE\_URL`|—|**Yes**|PostgreSQL connection string|
+|`REDIS\_URL`|—|**Yes**|Redis connection string, e.g. `redis://localhost:6379`|
+|`JWT\_ACCESS\_SECRET`|—|**Yes**|Min 32 chars in production|
+|`JWT\_REFRESH\_SECRET`|—|**Yes**|Min 32 chars; must differ from access secret|
+|`ACCESS\_TOKEN\_TTL`|`15m`|No|Access token lifetime|
+|`REFRESH\_TOKEN\_TTL`|`7d`|No|Refresh token lifetime|
+|`CLIENT\_URL`|—|**Yes**|Allowed CORS origin (comma-separated for multiple)|
+|`MAX\_TERMINAL\_SESSIONS`|`50`|No|Max concurrent terminal container connections|
+|`TERMINAL\_IDLE\_TIMEOUT\_MS`|`600000`|No|WS idle timeout (10 min). Closes the WebSocket connection, but does **not** destroy the container.|
 
 </details>
 
@@ -603,13 +602,13 @@ CLIENT\\\\\\\\\\\\\\\_URL=                  # required — e.g. http://localhost
 
 |Variable|Default (dev)|Description|
 |-|-|-|
-|`VITE\\\\\\\\\\\\\\\_API\\\\\\\\\\\\\\\_URL`|`/api`|Relative path — proxied same-origin to the backend by Vite's dev server|
-|`VITE\\\\\\\\\\\\\\\_YJS\\\\\\\\\\\\\\\_WS\\\\\\\\\\\\\\\_URL`|`ws://localhost:5173`|Same-origin; Vite proxies `/ws` through to the backend|
-|`VITE\\\\\\\\\\\\\\\_TERMINAL\\\\\\\\\\\\\\\_WS\\\\\\\\\\\\\\\_URL`|`ws://localhost:5173/terminal`|Same-origin; Vite proxies `/terminal` through to the backend|
+|`VITE\_API\_URL`|`/api`|Relative path — proxied same-origin to the backend by Vite's dev server|
+|`VITE\_YJS\_WS\_URL`|`ws://localhost:5173`|Same-origin; Vite proxies `/ws` through to the backend|
+|`VITE\_TERMINAL\_WS\_URL`|`ws://localhost:5173/terminal`|Same-origin; Vite proxies `/terminal` through to the backend|
 
-> \\\\\\\\\\\\\\\*\\\\\\\\\\\\\\\*Why same-origin defaults?\\\\\\\\\\\\\\\*\\\\\\\\\\\\\\\* The backend's refresh-token cookie is `SameSite=Lax`. Browsers will not attach it to a cross-origin POST from `:5173` directly to `:4000`. Vite's dev proxy makes every request same-origin so the cookie is sent correctly.
+> \*\*Why same-origin defaults?\*\* The backend's refresh-token cookie is `SameSite=Lax`. Browsers will not attach it to a cross-origin POST from `:5173` directly to `:4000`. Vite's dev proxy makes every request same-origin so the cookie is sent correctly.
 >
-> Do \\\\\\\\\\\\\\\*\\\\\\\\\\\\\\\*not\\\\\\\\\\\\\\\*\\\\\\\\\\\\\\\* point `VITE\\\\\\\\\\\\\\\_YJS\\\\\\\\\\\\\\\_WS\\\\\\\\\\\\\\\_URL` or `VITE\\\\\\\\\\\\\\\_TERMINAL\\\\\\\\\\\\\\\_WS\\\\\\\\\\\\\\\_URL` directly at `http://localhost:4000` unless you have also changed the cookie's `SameSite` policy. For production (no dev proxy), point these at your actual backend origin — see `frontend/.env.example` for the commented-out production block.
+> Do \*\*not\*\* point `VITE\_YJS\_WS\_URL` or `VITE\_TERMINAL\_WS\_URL` directly at `http://localhost:4000` unless you have also changed the cookie's `SameSite` policy. For production (no dev proxy), point these at your actual backend origin — see `frontend/.env.example` for the commented-out production block.
 
 </details>
 
@@ -641,7 +640,7 @@ Sessions use per-session roles, fully independent of any global `User.role` fiel
 |**EDITOR**|Invite link with EDITOR role|✅|✅|❌|❌|❌|
 |**VIEWER**|Invite link with VIEWER role|❌|❌|❌|❌|❌|
 
-> \\\\\\\\\\\\\\\*\\\\\\\\\\\\\\\*VIEWER enforcement is applied at the Yjs WebSocket protocol layer\\\\\\\\\\\\\\\*\\\\\\\\\\\\\\\*, not only at the REST API. Mutating Yjs frames sent by a VIEWER connection are inspected using `y-protocols` and dropped before they reach the shared `Y.Doc`. A VIEWER cannot inject code changes even via a direct WebSocket client.
+> \*\*VIEWER enforcement is applied at the Yjs WebSocket protocol layer\*\*, not only at the REST API. Mutating Yjs frames sent by a VIEWER connection are inspected using `y-protocols` and dropped before they reach the shared `Y.Doc`. A VIEWER cannot inject code changes even via a direct WebSocket client.
 
 \---
 
@@ -672,7 +671,7 @@ Package managers (`npm`, `pip`, `go get`) require internet access to their respe
 
 Containers are named `ws-<sessionId>` and survive client disconnects. Reconnecting reattaches to the existing container with all running processes and installed packages intact. A background idle reaper destroys containers after **4 hours** of no terminal I/O activity.
 
-> \\\\\\\\\\\\\\\*\\\\\\\\\\\\\\\*Note:\\\\\\\\\\\\\\\*\\\\\\\\\\\\\\\* `TERMINAL\\\\\\\\\\\\\\\_IDLE\\\\\\\\\\\\\\\_TIMEOUT\\\\\\\\\\\\\\\_MS` only closes the WebSocket connection after inactivity — it does \\\\\\\\\\\\\\\*\\\\\\\\\\\\\\\*not\\\\\\\\\\\\\\\*\\\\\\\\\\\\\\\* destroy the container. Container destruction is controlled exclusively by the 4-hour idle reaper.
+> \*\*Note:\*\* `TERMINAL\_IDLE\_TIMEOUT\_MS` only closes the WebSocket connection after inactivity — it does \*\*not\*\* destroy the container. Container destruction is controlled exclusively by the 4-hour idle reaper.
 
 \---
 
@@ -700,7 +699,7 @@ Click **"View replays"** → the latest recording opens at `?replay=<id>`. Selec
 
 ### Seeking Performance
 
-The `ReplayEngine` finds the nearest `YJS\\\\\\\\\\\\\\\_SNAPSHOT` event before the target position and only replays delta updates after it. Seek complexity is **O(updates since last snapshot)**, not O(all updates since recording start).
+The `ReplayEngine` finds the nearest `YJS\_SNAPSHOT` event before the target position and only replays delta updates after it. Seek complexity is **O(updates since last snapshot)**, not O(all updates since recording start).
 
 \---
 
@@ -773,7 +772,7 @@ Replaying every CRDT update from the start of a recording to reach an arbitrary 
 
 <br />
 
-Prisma's postinstall hook downloads a native query engine binary, which requires internet access to `binaries.prisma.sh`. Run `npm install` in a network-connected environment. In restricted CI environments, set `PRISMA\\\\\\\\\\\\\\\_ENGINES\\\\\\\\\\\\\\\_CHECKSUM\\\\\\\\\\\\\\\_IGNORE\\\\\\\\\\\\\\\_MISSING=1` or configure `PRISMA\\\\\\\\\\\\\\\_BINARY\\\\\\\\\\\\\\\_TARGETS`.
+Prisma's postinstall hook downloads a native query engine binary, which requires internet access to `binaries.prisma.sh`. Run `npm install` in a network-connected environment. In restricted CI environments, set `PRISMA\_ENGINES\_CHECKSUM\_IGNORE\_MISSING=1` or configure `PRISMA\_BINARY\_TARGETS`.
 
 </details>
 
@@ -793,7 +792,7 @@ Prisma's postinstall hook downloads a native query engine binary, which requires
 
 <br />
 
-* In local dev, `VITE\\\\\\\\\\\\\\\_YJS\\\\\\\\\\\\\\\_WS\\\\\\\\\\\\\\\_URL` and `VITE\\\\\\\\\\\\\\\_TERMINAL\\\\\\\\\\\\\\\_WS\\\\\\\\\\\\\\\_URL` should point at `localhost:5173` (the Vite dev server) — Vite's proxy forwards `/ws` and `/terminal` to the backend at `:4000`. Pointing them directly at `:4000` skips the proxy and reintroduces a `SameSite=Lax` cookie problem.
+* In local dev, `VITE\_YJS\_WS\_URL` and `VITE\_TERMINAL\_WS\_URL` should point at `localhost:5173` (the Vite dev server) — Vite's proxy forwards `/ws` and `/terminal` to the backend at `:4000`. Pointing them directly at `:4000` skips the proxy and reintroduces a `SameSite=Lax` cookie problem.
 * In production (no dev proxy), these should point at wherever the backend actually listens.
 * Both WebSocket endpoints run on the same server as REST — there is no separate port 4001.
 
@@ -840,9 +839,9 @@ Run `npm install` inside the `frontend/` directory — the `vite` package ships 
 
 <br />
 
-* Confirm both browsers are connected to the same Yjs WebSocket (same `VITE\\\\\\\\\\\\\\\_YJS\\\\\\\\\\\\\\\_WS\\\\\\\\\\\\\\\_URL` and same `sessionId`)
+* Confirm both browsers are connected to the same Yjs WebSocket (same `VITE\_YJS\_WS\_URL` and same `sessionId`)
 * Check backend logs for Yjs upgrade auth failures (expired or missing token)
-* Confirm Redis is running and `REDIS\\\\\\\\\\\\\\\_URL` is correct (required when running multiple backend replicas)
+* Confirm Redis is running and `REDIS\_URL` is correct (required when running multiple backend replicas)
 
 </details>
 
