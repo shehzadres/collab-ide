@@ -14,11 +14,11 @@
 
 
 
-\# 🚀 Collab IDE
+\## Collab IDE
 
 
 
-\*\*A production-grade, browser-based collaborative code editor.\*\*
+A production-grade, browser-based collaborative code editor.\*\*
 
 Real-time CRDT Synchronization • Multi-cursor Presence • Sandboxed Multi-language Execution • Session Recording \& Replay • Role-based Access Control
 
