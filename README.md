@@ -1,19 +1,3 @@
-<p align="center">
-
-&#x20; <img src="./assets/images/logo.png" alt="Collab IDE Logo" width="96">
-
-</p>
-
-
-
-<p align="center">
-
-&#x20; <img src="./assets/images/banner.png" alt="Collab IDE Banner" width="100%">
-
-</p>
-
-
-
 \## Collab IDE
 
 
