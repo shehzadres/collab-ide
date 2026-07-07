@@ -1,64 +1,94 @@
+<div align="center">
+
+&#x20; <img src="./assets/images/logo.png" alt="Collab IDE Logo" width="96" />
+
+&#x20; <br /><br />
+
+&#x20; <img src="./assets/images/banner.png" alt="Collab IDE Banner" width="100%" />
+
+</div>
+
+
+
+\# Collab IDE
+
+
+
+> \*\*A production-grade, browser-based collaborative code editor.\*\*
+
+
+
 <p align="center">
 
-&#x20; <img src="./assets/images/logo.png" alt="Collab IDE Logo" width="96">
+Real-time CRDT Synchronization • Multi-cursor Presence • Sandboxed Multi-language Execution • Session Recording \& Replay • Role-based Access Control
 
 </p>
 
 
 
-<p align="center">
-
-&#x20; <img src="./assets/images/banner.png" alt="Collab IDE Banner" width="100%">
-
-</p>
+<div align="center">
 
 
 
-<h1 align="center">Collab IDE</h1>
+\### 🚀 Tech Stack
 
 
 
-<p align="center">
+\[!\[React](https://img.shields.io/badge/React-20232A?style=for-the-badge\&logo=react\&logoColor=61DAFB)](https://react.dev)
 
-&#x20; <strong>A production-grade, browser-based collaborative code editor.</strong>
+\[!\[TypeScript](https://img.shields.io/badge/TypeScript-3178C6?style=for-the-badge\&logo=typescript\&logoColor=white)](https://www.typescriptlang.org)
 
-</p>
+\[!\[Node.js](https://img.shields.io/badge/Node.js-339933?style=for-the-badge\&logo=nodedotjs\&logoColor=white)](https://nodejs.org)
+
+\[!\[Express](https://img.shields.io/badge/Express-000000?style=for-the-badge\&logo=express\&logoColor=white)](https://expressjs.com)
+
+\[!\[PostgreSQL](https://img.shields.io/badge/PostgreSQL-316192?style=for-the-badge\&logo=postgresql\&logoColor=white)](https://www.postgresql.org)
+
+\[!\[Redis](https://img.shields.io/badge/Redis-D82C20?style=for-the-badge\&logo=redis\&logoColor=white)](https://redis.io)
+
+\[!\[Docker](https://img.shields.io/badge/Docker-2496ED?style=for-the-badge\&logo=docker\&logoColor=white)](https://www.docker.com)
+
+\[!\[Monaco Editor](https://img.shields.io/badge/Monaco\_Editor-007ACC?style=for-the-badge\&logo=visualstudiocode\&logoColor=white)](https://microsoft.github.io/monaco-editor/)
+
+\[!\[Yjs](https://img.shields.io/badge/Yjs-FFB300?style=for-the-badge)](https://yjs.dev)
 
 
 
-<p align="center">
-
-&#x20; Real-time CRDT Synchronization • Multi-cursor Presence • Sandboxed Multi-language Execution • Session Recording \& Replay • Role-based Access Control
-
-</p>
+\### 📊 Project Status
 
 
 
-\---
+\[!\[License](https://img.shields.io/github/license/shehzadres/collab-ide?style=for-the-badge)](LICENSE)
+
+\[!\[Release](https://img.shields.io/github/v/release/shehzadres/collab-ide?style=for-the-badge)](https://github.com/shehzadres/collab-ide/releases)
+
+\[!\[Stars](https://img.shields.io/github/stars/shehzadres/collab-ide?style=for-the-badge)](https://github.com/shehzadres/collab-ide/stargazers)
+
+\[!\[Forks](https://img.shields.io/github/forks/shehzadres/collab-ide?style=for-the-badge)](https://github.com/shehzadres/collab-ide/network/members)
+
+\[!\[Issues](https://img.shields.io/github/issues/shehzadres/collab-ide?style=for-the-badge)](https://github.com/shehzadres/collab-ide/issues)
+
+\[!\[Last Commit](https://img.shields.io/github/last-commit/shehzadres/collab-ide?style=for-the-badge)](https://github.com/shehzadres/collab-ide/commits/main)
 
 
 
-<p align="center">
+\### 🔗 Quick Links
 
-&#x20; <a href="https://react.dev"><img src="https://img.shields.io/badge/React-61DAFB?style=flat-square\&logo=react\&logoColor=white" alt="React"></a>
 
-&#x20; <a href="https://www.typescriptlang.org"><img src="https://img.shields.io/badge/TypeScript-3178C6?style=flat-square\&logo=typescript\&logoColor=white" alt="TypeScript"></a>
 
-&#x20; <a href="https://nodejs.org"><img src="https://img.shields.io/badge/Node.js-339933?style=flat-square\&logo=nodedotjs\&logoColor=white" alt="Node.js"></a>
+\[!\[Live Demo](https://img.shields.io/badge/🚀\_Live\_Demo-4CAF50?style=for-the-badge)](https://your-live-demo.vercel.app)
 
-&#x20; <a href="https://expressjs.com"><img src="https://img.shields.io/badge/Express-000000?style=flat-square\&logo=express\&logoColor=white" alt="Express"></a>
+\[!\[Documentation](https://img.shields.io/badge/📚\_Documentation-1E88E5?style=for-the-badge)](https://yourdomain.dev/docs)
 
-&#x20; <a href="https://www.postgresql.org"><img src="https://img.shields.io/badge/PostgreSQL-4169E1?style=flat-square\&logo=postgresql\&logoColor=white" alt="PostgreSQL"></a>
+\[!\[Report Bug](https://img.shields.io/badge/🐞\_Report\_Bug-E53935?style=for-the-badge)](https://github.com/shehzadres/collab-ide/issues)
 
-&#x20; <a href="https://redis.io"><img src="https://img.shields.io/badge/Redis-DC382D?style=flat-square\&logo=redis\&logoColor=white" alt="Redis"></a>
+\[!\[Request Feature](https://img.shields.io/badge/💡\_Request\_Feature-8E24AA?style=for-the-badge)](https://github.com/shehzadres/collab-ide/issues)
 
-&#x20; <a href="https://www.docker.com"><img src="https://img.shields.io/badge/Docker-2496ED?style=flat-square\&logo=docker\&logoColor=white" alt="Docker"></a>
+\[!\[PRs Welcome](https://img.shields.io/badge/PRs-Welcome-success?style=for-the-badge)](CONTRIBUTING.md)
 
-&#x20; <a href="https://microsoft.github.io/monaco-editor/"><img src="https://img.shields.io/badge/Monaco-007ACC?style=flat-square\&logo=visualstudiocode\&logoColor=white" alt="Monaco"></a>
 
-&#x20; <a href="https://yjs.dev"><img src="https://img.shields.io/badge/Yjs-FFB300?style=flat-square" alt="Yjs"></a>
 
-</p>---
+</div>---
 
 ## Table of Contents
 
