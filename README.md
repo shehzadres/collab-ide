@@ -28,9 +28,13 @@
 
 <p align="center">
 
-&#x20; Real-time CRDT synchronization • Multi-cursor Presence • Sandboxed Multi-language Execution • Session Recording \& Replay • Role-based Access Control
+&#x20; Real-time CRDT Synchronization • Multi-cursor Presence • Sandboxed Multi-language Execution • Session Recording \& Replay • Role-based Access Control
 
 </p>
+
+
+
+\---
 
 
 
@@ -38,71 +42,23 @@
 
 
 
-&#x20; <img src="https://img.shields.io/badge/React-20232A?style=for-the-badge\&logo=react\&logoColor=61DAFB" alt="React">
+<a href="https://react.dev"><img src="https://img.shields.io/badge/React-61DAFB?style=flat-square\&logo=react\&logoColor=white"></a>
 
-&#x20; <img src="https://img.shields.io/badge/TypeScript-3178C6?style=for-the-badge\&logo=typescript\&logoColor=white" alt="TypeScript">
+<a href="https://www.typescriptlang.org"><img src="https://img.shields.io/badge/TypeScript-3178C6?style=flat-square\&logo=typescript\&logoColor=white"></a>
 
-&#x20; <img src="https://img.shields.io/badge/Node.js-339933?style=for-the-badge\&logo=nodedotjs\&logoColor=white" alt="Node.js">
+<a href="https://nodejs.org"><img src="https://img.shields.io/badge/Node.js-339933?style=flat-square\&logo=nodedotjs\&logoColor=white"></a>
 
-&#x20; <img src="https://img.shields.io/badge/Express-000000?style=for-the-badge\&logo=express\&logoColor=white" alt="Express">
+<a href="https://expressjs.com"><img src="https://img.shields.io/badge/Express-000000?style=flat-square\&logo=express\&logoColor=white"></a>
 
-&#x20; <img src="https://img.shields.io/badge/PostgreSQL-316192?style=for-the-badge\&logo=postgresql\&logoColor=white" alt="PostgreSQL">
+<a href="https://www.postgresql.org"><img src="https://img.shields.io/badge/PostgreSQL-4169E1?style=flat-square\&logo=postgresql\&logoColor=white"></a>
 
-&#x20; <img src="https://img.shields.io/badge/Redis-D82C20?style=for-the-badge\&logo=redis\&logoColor=white" alt="Redis">
+<a href="https://redis.io"><img src="https://img.shields.io/badge/Redis-DC382D?style=flat-square\&logo=redis\&logoColor=white"></a>
 
-&#x20; <img src="https://img.shields.io/badge/Docker-2496ED?style=for-the-badge\&logo=docker\&logoColor=white" alt="Docker">
+<a href="https://docker.com"><img src="https://img.shields.io/badge/Docker-2496ED?style=flat-square\&logo=docker\&logoColor=white"></a>
 
-&#x20; <img src="https://img.shields.io/badge/Monaco%20Editor-007ACC?style=for-the-badge\&logo=visualstudiocode\&logoColor=white" alt="Monaco Editor">
+<a href="https://microsoft.github.io/monaco-editor/"><img src="https://img.shields.io/badge/Monaco-007ACC?style=flat-square\&logo=visualstudiocode\&logoColor=white"></a>
 
-&#x20; <img src="https://img.shields.io/badge/Yjs-FFB300?style=for-the-badge" alt="Yjs">
-
-
-
-</p>
-
-
-
-<p align="center">
-
-
-
-&#x20; <a href="LICENSE">
-
-&#x20;   <img src="https://img.shields.io/github/license/shehzadres/collab-ide?style=for-the-badge" alt="License">
-
-&#x20; </a>
-
-
-
-&#x20; <a href="https://github.com/shehzadres/collab-ide/stargazers">
-
-&#x20;   <img src="https://img.shields.io/github/stars/shehzadres/collab-ide?style=for-the-badge" alt="Stars">
-
-&#x20; </a>
-
-
-
-&#x20; <a href="https://github.com/shehzadres/collab-ide/network/members">
-
-&#x20;   <img src="https://img.shields.io/github/forks/shehzadres/collab-ide?style=for-the-badge" alt="Forks">
-
-&#x20; </a>
-
-
-
-&#x20; <a href="https://github.com/shehzadres/collab-ide/issues">
-
-&#x20;   <img src="https://img.shields.io/github/issues/shehzadres/collab-ide?style=for-the-badge" alt="Issues">
-
-&#x20; </a>
-
-
-
-&#x20; <a href="https://github.com/shehzadres/collab-ide/commits/main">
-
-&#x20;   <img src="https://img.shields.io/github/last-commit/shehzadres/collab-ide?style=for-the-badge" alt="Last Commit">
-
-&#x20; </a>
+<a href="https://yjs.dev"><img src="https://img.shields.io/badge/Yjs-FFB300?style=flat-square"></a>
 
 
 
@@ -114,49 +70,39 @@
 
 
 
-&#x20; <a href="https://your-live-demo.vercel.app">
+<a href="./LICENSE"><img src="https://img.shields.io/github/license/shehzadres/collab-ide?style=for-the-badge"></a>
 
-&#x20;   <img src="https://img.shields.io/badge/🚀-Live%20Demo-success?style=for-the-badge" alt="Live Demo">
+<a href="https://github.com/shehzadres/collab-ide/stargazers"><img src="https://img.shields.io/github/stars/shehzadres/collab-ide?style=for-the-badge"></a>
 
-&#x20; </a>
+<a href="https://github.com/shehzadres/collab-ide/network/members"><img src="https://img.shields.io/github/forks/shehzadres/collab-ide?style=for-the-badge"></a>
 
+<a href="https://github.com/shehzadres/collab-ide/issues"><img src="https://img.shields.io/github/issues/shehzadres/collab-ide?style=for-the-badge"></a>
 
-
-&#x20; <a href="https://yourdomain.dev/docs">
-
-&#x20;   <img src="https://img.shields.io/badge/📚-Documentation-blue?style=for-the-badge" alt="Documentation">
-
-&#x20; </a>
-
-
-
-&#x20; <a href="https://github.com/shehzadres/collab-ide/issues">
-
-&#x20;   <img src="https://img.shields.io/badge/🐛-Report%20Bug-red?style=for-the-badge" alt="Report Bug">
-
-&#x20; </a>
-
-
-
-&#x20; <a href="https://github.com/shehzadres/collab-ide/issues">
-
-&#x20;   <img src="https://img.shields.io/badge/💡-Request%20Feature-purple?style=for-the-badge" alt="Request Feature">
-
-&#x20; </a>
-
-
-
-&#x20; <a href="./CONTRIBUTING.md">
-
-&#x20;   <img src="https://img.shields.io/badge/PRs-Welcome-brightgreen?style=for-the-badge" alt="PRs Welcome">
-
-&#x20; </a>
+<a href="https://github.com/shehzadres/collab-ide/commits/main"><img src="https://img.shields.io/github/last-commit/shehzadres/collab-ide?style=for-the-badge"></a>
 
 
 
 </p>
 
 
+
+<p align="center">
+
+
+
+<a href="https://your-live-demo.vercel.app"><img src="https://img.shields.io/badge/Live%20Demo-success?style=for-the-badge"></a>
+
+<a href="https://yourdomain.dev/docs"><img src="https://img.shields.io/badge/Documentation-blue?style=for-the-badge"></a>
+
+<a href="https://github.com/shehzadres/collab-ide/issues"><img src="https://img.shields.io/badge/Report%20Bug-red?style=for-the-badge"></a>
+
+<a href="https://github.com/shehzadres/collab-ide/issues"><img src="https://img.shields.io/badge/Request%20Feature-purple?style=for-the-badge"></a>
+
+<a href="./CONTRIBUTING.md"><img src="https://img.shields.io/badge/PRs-Welcome-brightgreen?style=for-the-badge"></a>
+
+
+
+</p>
 
 \---
 
