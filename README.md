@@ -42,63 +42,7 @@
 
 
 
-<a href="https://react.dev"><img src="https://img.shields.io/badge/React-61DAFB?style=flat-square\&logo=react\&logoColor=white"></a>
-
-<a href="https://www.typescriptlang.org"><img src="https://img.shields.io/badge/TypeScript-3178C6?style=flat-square\&logo=typescript\&logoColor=white"></a>
-
-<a href="https://nodejs.org"><img src="https://img.shields.io/badge/Node.js-339933?style=flat-square\&logo=nodedotjs\&logoColor=white"></a>
-
-<a href="https://expressjs.com"><img src="https://img.shields.io/badge/Express-000000?style=flat-square\&logo=express\&logoColor=white"></a>
-
-<a href="https://www.postgresql.org"><img src="https://img.shields.io/badge/PostgreSQL-4169E1?style=flat-square\&logo=postgresql\&logoColor=white"></a>
-
-<a href="https://redis.io"><img src="https://img.shields.io/badge/Redis-DC382D?style=flat-square\&logo=redis\&logoColor=white"></a>
-
-<a href="https://docker.com"><img src="https://img.shields.io/badge/Docker-2496ED?style=flat-square\&logo=docker\&logoColor=white"></a>
-
-<a href="https://microsoft.github.io/monaco-editor/"><img src="https://img.shields.io/badge/Monaco-007ACC?style=flat-square\&logo=visualstudiocode\&logoColor=white"></a>
-
-<a href="https://yjs.dev"><img src="https://img.shields.io/badge/Yjs-FFB300?style=flat-square"></a>
-
-
-
-</p>
-
-
-
-<p align="center">
-
-
-
-<a href="./LICENSE"><img src="https://img.shields.io/github/license/shehzadres/collab-ide?style=for-the-badge"></a>
-
-<a href="https://github.com/shehzadres/collab-ide/stargazers"><img src="https://img.shields.io/github/stars/shehzadres/collab-ide?style=for-the-badge"></a>
-
-<a href="https://github.com/shehzadres/collab-ide/network/members"><img src="https://img.shields.io/github/forks/shehzadres/collab-ide?style=for-the-badge"></a>
-
-<a href="https://github.com/shehzadres/collab-ide/issues"><img src="https://img.shields.io/github/issues/shehzadres/collab-ide?style=for-the-badge"></a>
-
-<a href="https://github.com/shehzadres/collab-ide/commits/main"><img src="https://img.shields.io/github/last-commit/shehzadres/collab-ide?style=for-the-badge"></a>
-
-
-
-</p>
-
-
-
-<p align="center">
-
-
-
-<a href="https://your-live-demo.vercel.app"><img src="https://img.shields.io/badge/Live%20Demo-success?style=for-the-badge"></a>
-
-<a href="https://yourdomain.dev/docs"><img src="https://img.shields.io/badge/Documentation-blue?style=for-the-badge"></a>
-
-<a href="https://github.com/shehzadres/collab-ide/issues"><img src="https://img.shields.io/badge/Report%20Bug-red?style=for-the-badge"></a>
-
-<a href="https://github.com/shehzadres/collab-ide/issues"><img src="https://img.shields.io/badge/Request%20Feature-purple?style=for-the-badge"></a>
-
-<a href="./CONTRIBUTING.md"><img src="https://img.shields.io/badge/PRs-Welcome-brightgreen?style=for-the-badge"></a>
+\[!\[](https://img.shields.io/badge/React-61DAFB?style=flat-square\&logo=react\&logoColor=white)](https://react.dev) \[!\[](https://img.shields.io/badge/TypeScript-3178C6?style=flat-square\&logo=typescript\&logoColor=white)](https://www.typescriptlang.org) \[!\[](https://img.shields.io/badge/Node.js-339933?style=flat-square\&logo=nodedotjs\&logoColor=white)](https://nodejs.org) \[!\[](https://img.shields.io/badge/Express-000000?style=flat-square\&logo=express\&logoColor=white)](https://expressjs.com) \[!\[](https://img.shields.io/badge/PostgreSQL-4169E1?style=flat-square\&logo=postgresql\&logoColor=white)](https://postgresql.org) \[!\[](https://img.shields.io/badge/Redis-DC382D?style=flat-square\&logo=redis\&logoColor=white)](https://redis.io) \[!\[](https://img.shields.io/badge/Docker-2496ED?style=flat-square\&logo=docker\&logoColor=white)](https://docker.com) \[!\[](https://img.shields.io/badge/Monaco-007ACC?style=flat-square\&logo=visualstudiocode\&logoColor=white)](https://microsoft.github.io/monaco-editor/) \[!\[](https://img.shields.io/badge/Yjs-FFB300?style=flat-square)](https://yjs.dev)
 
 
 
