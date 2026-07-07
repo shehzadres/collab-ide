@@ -5,10 +5,6 @@
   Collab IDE
 </h1>
 
-<p align="center">
-  <img src="./assets/banner.png" alt="Collab IDE" width="100%">
-</p>
-
 <p><strong>A production-grade, real-time collaborative code editor that runs in your browser.</strong></p>
 
 <p>
