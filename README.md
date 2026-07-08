@@ -1,317 +1,159 @@
 # Collab IDE
 
-<div align="center">
+A production-quality, browser-based collaborative code editor. Multiple users open the
+same session and edit files together in real time, with conflict-free CRDT synchronization,
+live multi-cursor presence, a sandboxed multi-language terminal, session recording/replay,
+per-session role-based permissions, and invite-link collaboration.
 
-<img src="./assets/images/banner.png" alt="Collab IDE Banner" width="100%" />
+\---
 
-<br />
+## Table of contents
 
-[![License](https://img.shields.io/badge/license-MIT-blue.svg?style=for-the-badge)](#license)
-[![React](https://img.shields.io/badge/React-18-61DAFB?style=for-the-badge&logo=react&logoColor=white)](https://react.dev)
-[![TypeScript](https://img.shields.io/badge/TypeScript-5-3178C6?style=for-the-badge&logo=typescript&logoColor=white)](https://www.typescriptlang.org)
-[![Node.js](https://img.shields.io/badge/Node.js-20-339933?style=for-the-badge&logo=nodedotjs&logoColor=white)](https://nodejs.org)
-[![Express](https://img.shields.io/badge/Express-4-000000?style=for-the-badge&logo=express&logoColor=white)](https://expressjs.com)
-[![PostgreSQL](https://img.shields.io/badge/PostgreSQL-16-4169E1?style=for-the-badge&logo=postgresql&logoColor=white)](https://www.postgresql.org)
-[![Redis](https://img.shields.io/badge/Redis-7-DC382D?style=for-the-badge&logo=redis&logoColor=white)](https://redis.io)
-[![Docker](https://img.shields.io/badge/Docker-24-2496ED?style=for-the-badge&logo=docker&logoColor=white)](https://www.docker.com)
-[![Monaco Editor](https://img.shields.io/badge/Monaco-VS%20Code%20Engine-007ACC?style=for-the-badge&logo=visualstudiocode&logoColor=white)](https://microsoft.github.io/monaco-editor/)
-[![Yjs](https://img.shields.io/badge/Yjs-CRDT-F5A623?style=for-the-badge)](https://yjs.dev)
+1. [Features](#features)
+2. [Tech stack](#tech-stack)
+3. [Architecture overview](#architecture-overview)
+4. [Project structure](#project-structure)
+5. [Prerequisites](#prerequisites)
+6. [Environment variables](#environment-variables)
+7. [Local development](#local-development)
+8. [Production deployment](#production-deployment)
+9. [First run walkthrough](#first-run-walkthrough)
+10. [Roles and permissions](#roles-and-permissions)
+11. [Workspace runtimes](#workspace-runtimes)
+12. [Session recording and replay](#session-recording-and-replay)
+13. [Known limitations](#known-limitations)
+14. [Troubleshooting](#troubleshooting)
 
-<br />
+\---
 
-**A production-grade, browser-based collaborative code editor.**
+## Features
 
-Real-time CRDT synchronization · Multi-cursor presence · Sandboxed multi-language execution · Session recording & replay · Role-based access control
+|Category|Feature|
+|-|-|
+|**Collaboration**|Real-time CRDT editing (Yjs), conflict-free concurrent edits|
+|**Collaboration**|Multi-cursor presence — colored cursors, selection highlights, username labels|
+|**Collaboration**|Online-user avatars with join/leave notifications|
+|**Editor**|Monaco Editor (same engine as VS Code), syntax highlighting for 10+ languages|
+|**Editor**|Per-file undo/redo stacks, tab management, auto-layout resize|
+|**Editor**|4 themes: Dark, Light, Midnight, Solarized|
+|**Files**|File explorer with create/rename/move/delete, folder tree, lazy content loading|
+|**Files**|Role-gated mutations (VIEWER cannot create or delete)|
+|**Terminal**|Real sandboxed shell inside a Docker container per session|
+|**Terminal**|Persistent workspaces — container survives disconnect, reattaches on reconnect|
+|**Terminal**|4 language runtimes: Shell, Node.js, Python, Go|
+|**Terminal**|▶ Run active file in the session's runtime, output streamed into the terminal|
+|**Terminal**|Install packages (npm/pip/go get) with streaming output|
+|**Auth**|Email/password registration and login|
+|**Auth**|JWT access token (15 min, in-memory) + refresh token (7 days, httpOnly cookie)|
+|**Auth**|Silent token refresh via axios interceptor|
+|**Permissions**|Per-session roles: OWNER, EDITOR, VIEWER|
+|**Permissions**|Invite links (token-based, per-role, optional expiry/use-limit)|
+|**Permissions**|VIEWER enforced at the Yjs WebSocket protocol level (not just REST)|
+|**Recording**|Session recording — captures every CRDT update and terminal byte|
+|**Recording**|Yjs snapshots every 10 s for fast seek without full replay|
+|**Replay**|Full replay player with scrubber, play/pause, speed (0.5×–4×), seek-to-snapshot|
+|**Polish**|Command palette (Cmd/Ctrl+K), fuzzy search across all workspace commands|
+|**Polish**|Keyboard shortcuts, theme switching, toast notifications, notification bell|
+|**Polish**|Project templates: Blank, Node.js, Python, HTML/CSS/JS|
+|**Scaling**|Redis-backed Yjs sync — Yjs updates broadcast across backend replicas|
+|**Scaling**|Redis-backed recording state with pub/sub cache invalidation|
 
-[Live Demo](https://your-live-demo.vercel.app) · [Documentation](https://yourdomain.dev/docs) · [Report a Bug](https://github.com/shehzadres/collab-ide/issues) · [Request a Feature](https://github.com/shehzadres/collab-ide/issues)
+\---
 
-</div>
+## Tech stack
 
----
+### Backend
 
-## Table of Contents
+|Package|Purpose|
+|-|-|
+|`express`|HTTP server and REST API|
+|`@prisma/client` + `prisma`|ORM + migrations (PostgreSQL)|
+|`bcryptjs`|Password hashing (pure JS, no native build required)|
+|`jsonwebtoken`|JWT access and refresh token sign/verify|
+|`cookie-parser`|httpOnly refresh token cookie|
+|`cors` + `helmet`|CORS and HTTP security headers|
+|`express-rate-limit`|Auth and file-mutation rate limiting|
+|`ioredis`|Redis client (Yjs pub/sub sync, recording state cache)|
+|`yjs` + `y-websocket`|CRDT server, WebSocket sync protocol|
+|`y-protocols` + `lib0`|Yjs protocol frame decoding (VIEWER enforcement)|
+|`ws`|Raw WebSocket server (Yjs + terminal)|
+|`dockerode`|Docker API client (create/attach/exec/kill containers)|
+|`dotenv`|Environment variable loading|
 
-- [Why Collab IDE](#why-collab-ide)
-- [Feature Highlights](#feature-highlights)
-- [Screenshots](#screenshots)
-- [Architecture Overview](#architecture-overview)
-- [Tech Stack](#tech-stack)
-- [Project Structure](#project-structure)
-- [Getting Started](#getting-started)
-  - [Prerequisites](#prerequisites)
-  - [Local Development](#local-development)
-  - [Docker Deployment](#docker-deployment)
-  - [Manual / Cloud Deployment](#manual--cloud-deployment)
-- [Environment Variables](#environment-variables)
-- [First Run Walkthrough](#first-run-walkthrough)
-- [Roles & Permissions](#roles--permissions)
-- [Workspace Runtimes](#workspace-runtimes)
-- [Session Recording & Replay](#session-recording--replay)
-- [Security Considerations](#security-considerations)
-- [Design Decisions](#design-decisions)
-- [Known Limitations](#known-limitations)
-- [Troubleshooting](#troubleshooting)
-- [Roadmap](#roadmap)
-- [Contributing](#contributing)
-- [License](#license)
-- [Acknowledgements](#acknowledgements)
+### Frontend
 
----
+|Package|Purpose|
+|-|-|
+|`react` + `react-dom`|UI framework|
+|`react-router-dom`|Client-side routing|
+|`vite`|Build tool and dev server|
+|`tailwindcss`|Utility-first styling|
+|`@monaco-editor/react` + `monaco-editor`|VS Code editor engine|
+|`yjs` + `y-websocket` + `y-monaco`|CRDT sync and Monaco binding|
+|`@xterm/xterm` + `@xterm/addon-fit`|Browser terminal emulator|
+|`axios`|HTTP client with interceptors (auth token injection, silent refresh)|
+|`zustand`|Lightweight global state (auth, editor, files, theme, notifications)|
 
-## Why Collab IDE
+### Infrastructure
 
-Most collaborative coding tools are either cloud-locked, oversimplified, or don't give you access to real execution environments. Collab IDE is different:
+|Component|Purpose|
+|-|-|
+|PostgreSQL 16|Users, files, session members, invites, recordings, workspaces|
+|Redis 7|Yjs cross-replica sync, recording active-state cache|
+|Docker|Sandboxed execution containers per session|
+|nginx|Frontend static file serving + SPA fallback + asset caching headers|
+|docker-compose|Full-stack local/production orchestration|
 
-- 🔀 **Conflict-free by design.** Powered by Yjs CRDTs — no operational-transform hacks, no "last write wins" data loss.
-- 🐳 **Real execution, real isolation.** Every session gets a sandboxed Docker container with memory, CPU, and network limits enforced at the kernel level.
-- 🔒 **Security at the protocol layer.** VIEWER permissions are enforced inside the Yjs WebSocket protocol — a VIEWER cannot inject code changes even via a raw WebSocket client.
-- 🏠 **Self-hostable.** One `docker compose up` and you own everything — your data, your infrastructure, your domain.
-- 📚 **Built to be studied.** The codebase is intentionally production-grade: typed end-to-end, modular, properly layered, and extensively documented.
+\---
 
----
-
-## Feature Highlights
-
-### 🔄 Conflict-Free Real-Time Collaboration
-
-| Feature | Details |
-|---|---|
-| CRDT synchronization | Yjs — concurrent edits from any number of users, zero conflicts |
-| Multi-cursor presence | Colored cursors, selection highlights, and username labels per user |
-| Online-user avatars | Real-time join/leave notifications with presence indicators |
-| Redis-backed scaling | Yjs updates broadcast across backend replicas via Redis pub/sub |
-
-### ✏️ Editor
-
-| Feature | Details |
-|---|---|
-| Monaco Editor | The same engine that powers VS Code, running in the browser |
-| Syntax highlighting | 10+ languages supported via Monaco's built-in language support |
-| Per-file undo/redo | Independent history stacks per open file |
-| Themes | Dark, Light, Midnight, Solarized |
-| Tab management | Multi-file tabs with auto-layout resize |
-
-### 📁 File System
-
-| Feature | Details |
-|---|---|
-| File explorer | Create, rename, move, and delete files and folders |
-| Lazy loading | File content fetched on open, not all at once |
-| Role-gated mutations | VIEWER role cannot create or delete files — enforced server-side |
-| Project templates | Blank, Node.js, Python, HTML/CSS/JS starter templates |
-
-### 🖥️ Sandboxed Terminal
-
-| Feature | Details |
-|---|---|
-| Real shell | A genuine shell session inside a per-session Docker container |
-| Persistent workspaces | Container survives disconnect; reconnection reattaches to the same shell with all installed packages intact |
-| 4 language runtimes | Shell, Node.js 20, Python 3.12, Go 1.23 |
-| Run active file | ▶ Run button executes the current file in the session's runtime, output streamed into the terminal |
-| Package installs | `npm install`, `pip install`, `go get` — with streaming output |
-
-### 🔐 Auth & Permissions
-
-| Feature | Details |
-|---|---|
-| Auth | Email/password registration and login |
-| Dual-token auth | JWT access token (15 min, in-memory) + refresh token (7 days, httpOnly cookie) |
-| Silent refresh | Axios interceptor handles token renewal transparently |
-| Per-session RBAC | OWNER, EDITOR, VIEWER roles — each assigned independently per session |
-| Invite links | Token-based invite URLs, per-role, with optional expiry and use-limit |
-
-### 🎬 Session Recording & Replay
-
-| Feature | Details |
-|---|---|
-| What's recorded | Every Yjs CRDT update frame, Yjs snapshots (every 10s), terminal input and output bytes |
-| Seeking | O(updates since last snapshot), not O(all updates) — snapshot-accelerated seeking |
-| Replay controls | Scrubber, play/pause, 0.5×–4× speed, seek-to-snapshot |
-
-### ⌨️ Developer Experience
-
-| Feature | Details |
-|---|---|
-| Command palette | Cmd/Ctrl+K — fuzzy search across all workspace commands |
-| Keyboard shortcuts | Full shortcut support throughout the UI |
-| Toast notifications | Non-blocking feedback for async operations |
-| Notification bell | Persistent in-session event log |
-
----
-
-## Screenshots
-
-<br />
-
-**Login Page**
-
-![Login](./assets/images/screenshots/login.png)
-
-**Session Dashboard**
-
-![Dashboard](./assets/images/screenshots/dashboard.png)
-
-**Collaborative Editor — Monaco with File Explorer & Terminal**
-
-![Editor](./assets/images/screenshots/editor.png)
-
-**Multi-Cursor Editing — Two Users, Live**
-
-![Multi-cursor](./assets/images/screenshots/multicursor.png)
-
-**Sandboxed Terminal — Running a Node.js Script**
-
-![Terminal](./assets/images/screenshots/terminal.png)
-
-**Members & Invite Management**
-
-![Members](./assets/images/screenshots/members.png)
-
-**Command Palette — Fuzzy Search**
-
-![Command Palette](./assets/images/screenshots/command-palette.png)
-
----
-
-## Architecture Overview
+## Architecture overview
 
 ```
 Browser
   │
-  ├─ HTTPS / REST ─────────────────────► Express API :4000
-  │                                           │
-  ├─ WebSocket (Yjs sync) ────────────────────►  y-websocket server
-  │   JWT token in query param                │    │
-  │                                           │    ├─ Y.Doc per room (sessionId)
-  │                                           │    ├─ Redis pub/sub broadcast
-  ├─ WebSocket (terminal) ────────────────────►    │  (cross-replica sync)
-  │   JWT token in query param                │    └─ awareness (multi-cursor)
-  │                                           │
-  │                                    ┌──────┤
-  │                                    │      │
-  │                             PostgreSQL  Redis
-  │                             (all data)  (ephemeral sync + recording state)
+  ├─ HTTPS/REST ──────────────────► Express API :4000
+  │                                      │
+  ├─ WebSocket (Yjs sync) ──────────────►│  y-websocket server
+  │   token in query param               │    │
+  │                                      │    ├─ Y.Doc per room
+  │                                      │    ├─ Redis pub/sub broadcast
+  ├─ WebSocket (terminal) ─────────────► │    │  (cross-replica sync)
+  │   token in query param               │    └─ awareness (multi-cursor)
+  │                                      │
+  │                               ┌──────┤
+  │                               │      │
+  │                        PostgreSQL  Redis
+  │                        (all data)  (ephemeral sync)
   │
   └─ Docker daemon (via dockerode)
        │
        ├─ ws-<sessionId>  ← persistent workspace container
-       │    Shell / Node.js / Python / Go
-       │    NetworkMode: none (default) or bridge (opt-in by OWNER)
-       │    Memory: 256 MB hard limit, swap disabled
-       │    CPU: 0.5 core
-       │    PIDs: 128 max
-       │    CapDrop: ALL, no-new-privileges
+       │    Shell / Node / Python / Go image
+       │    NetworkMode: none (default) or bridge (opt-in)
+       │    Memory: 256 MB, CPU: 0.5 core, PIDs: 128, CapDrop: ALL
        └─ ...
 ```
 
-<img src="./assets/images/diagrams/architecture.png" alt="Architecture Diagram" width="860" />
+**Key design decisions:**
 
-<details>
-<summary><strong>Backend & frontend layer diagrams</strong></summary>
+* **Single HTTP server** for REST, Yjs WS, and terminal WS (same port 4000, upgrade-routed)
+* **Yjs room = sessionId string** — no separate Session DB model, just a string shared between editor and terminal
+* **Persistent workspaces** — containers are looked up by deterministic name (`ws-<sessionId>`), not recreated on every connect. Destroyed by the idle reaper after 4 h inactivity
+* **VIEWER enforcement at protocol level** — Yjs frames from VIEWER connections are inspected and mutating update packets dropped before they reach the doc
+* **Access token in memory, refresh token in httpOnly cookie** — no localStorage, resistant to XSS token theft
 
-<br />
+\---
 
-![Backend Architecture](./assets/images/diagrams/backend.png)
-
-![Frontend Architecture](./assets/images/diagrams/frontend.png)
-
-</details>
-
-### Key Design Decisions
-
-**Single HTTP server for REST + both WebSocket endpoints.**
-REST, the Yjs WebSocket, and the terminal WebSocket all share port 4000. The server upgrade event routes connections by URL path — no separate port 4001, no dedicated WS process.
-
-**Yjs room = `sessionId` string.**
-There is no separate Session database model. The session ID is just a string shared between the editor and the terminal. Any user who knows the session ID (and has been granted a role) participates in the same Y.Doc.
-
-**Persistent workspace containers.**
-Containers are named `ws-<sessionId>` and looked up by that deterministic name on reconnect — not recreated. An idle reaper destroys containers after 4 hours of no terminal I/O activity.
-
-**VIEWER enforcement at the protocol layer.**
-When a VIEWER's Yjs WebSocket sends a mutating update packet, the server inspects the raw frame using `y-protocols` and drops it before it reaches the shared `Y.Doc`. REST-level enforcement is also present, but the protocol-level drop is the real guarantee.
-
-**Tokens out of `localStorage`.**
-The JWT access token lives in JavaScript memory (Zustand store). The refresh token lives in an `httpOnly` cookie, invisible to JavaScript. This eliminates the most common XSS-based token theft vector.
-
----
-
-## Tech Stack
-
-<details>
-<summary><strong>Backend</strong></summary>
-
-<br />
-
-| Package | Purpose |
-|---|---|
-| `express` | HTTP server and REST API |
-| `@prisma/client` + `prisma` | ORM and migrations (PostgreSQL) |
-| `bcryptjs` | Password hashing (pure JS — no native build required) |
-| `jsonwebtoken` | JWT access and refresh token sign/verify |
-| `cookie-parser` | httpOnly refresh token cookie |
-| `cors` + `helmet` | CORS and HTTP security headers |
-| `express-rate-limit` | Auth and file-mutation rate limiting |
-| `ioredis` | Redis client (Yjs pub/sub sync, recording state cache) |
-| `yjs` + `y-websocket` | CRDT server and WebSocket sync protocol |
-| `y-protocols` + `lib0` | Yjs protocol frame decoding (used for VIEWER enforcement) |
-| `ws` | Raw WebSocket server (Yjs + terminal) |
-| `dockerode` | Docker API client (create/attach/exec/kill containers) |
-| `dotenv` | Environment variable loading |
-
-</details>
-
-<details>
-<summary><strong>Frontend</strong></summary>
-
-<br />
-
-| Package | Purpose |
-|---|---|
-| `react` + `react-dom` | UI framework |
-| `react-router-dom` | Client-side routing |
-| `vite` | Build tool and dev server |
-| `tailwindcss` | Utility-first styling |
-| `@monaco-editor/react` + `monaco-editor` | VS Code editor engine in the browser |
-| `yjs` + `y-websocket` + `y-monaco` | CRDT sync and Monaco binding |
-| `@xterm/xterm` + `@xterm/addon-fit` | Browser terminal emulator |
-| `axios` | HTTP client with interceptors (auth token injection, silent refresh) |
-| `zustand` | Lightweight global state (auth, editor, files, theme, notifications) |
-
-</details>
-
-<details>
-<summary><strong>Infrastructure</strong></summary>
-
-<br />
-
-| Component | Purpose |
-|---|---|
-| PostgreSQL 16 | Users, files, session members, invites, recordings, workspaces |
-| Redis 7 | Yjs cross-replica sync, recording active-state cache |
-| Docker | Sandboxed execution containers per session |
-| nginx | Frontend static file serving, SPA fallback, asset caching headers |
-| docker-compose | Full-stack local and production orchestration |
-
-</details>
-
----
-
-## Project Structure
-
-<details>
-<summary><strong>Expand full directory tree</strong></summary>
-
-<br />
+## Project structure
 
 ```
 collab-ide/
-├── .env.example                    Root compose vars (Postgres creds, JWT secrets, CLIENT_URL)
+├── .env.example                    Root compose vars (Postgres creds, JWT, CLIENT_URL)
 ├── .dockerignore
 ├── README.md
 │
 ├── backend/
-│   ├── .env.example                All 11 backend env vars documented
+│   ├── .env.example                Backend env vars (all 11 documented below)
 │   ├── Dockerfile                  Multi-stage: build → slim runtime image
 │   ├── package.json
 │   ├── tsconfig.json
@@ -321,11 +163,11 @@ collab-ide/
 │       ├── app.ts                  Express app: middleware, routes, /health
 │       ├── server.ts               HTTP server, WS attach, graceful shutdown
 │       ├── config/
-│       │   └── env.ts              Validates all env vars on startup (fail-fast)
+│       │   └── env.ts              Validates all env vars on startup
 │       ├── middleware/
 │       │   ├── auth.middleware.ts      JWT verify → req.user, requireRole()
 │       │   ├── error.middleware.ts     Centralized 500 handler
-│       │   └── rateLimit.middleware.ts Auth / API / file-write rate limits
+│       │   └── rateLimit.middleware.ts Auth / API / file-write limits
 │       ├── utils/
 │       │   ├── jwt.ts              Sign/verify access + refresh tokens
 │       │   ├── logger.ts           Structured console logger
@@ -338,14 +180,14 @@ collab-ide/
 │       │   ├── files/              File tree CRUD (create/rename/move/delete)
 │       │   ├── permissions/        Per-session RBAC, invite links
 │       │   ├── sessions/           Recording start/stop, event buffering, replay
-│       │   ├── execution/          Runtime config, Docker runner, workspace reaper
+│       │   ├── execution/          Runtime config, docker runner, workspace reaper
 │       │   └── yjs-server/         Y.Doc registry, Redis sync, Yjs WS server
 │       └── websocket/
 │           ├── ws.server.ts        Wires Yjs + terminal WS onto the HTTP server
 │           └── terminal.socket.ts  Per-session Docker container attach/detach
 │
 ├── frontend/
-│   ├── .env.example                3 VITE_ vars
+│   ├── .env.example                3 VITE _ vars
 │   ├── Dockerfile                  Build → nginx static serve
 │   ├── nginx.conf                  SPA fallback, gzip, asset cache headers
 │   ├── package.json
@@ -354,26 +196,28 @@ collab-ide/
 │   ├── index.html
 │   └── src/
 │       ├── App.tsx                 Routes: /login /register /sessions /workspace/:id /invite/:token
-│       ├── main.tsx                React entry point
+│       ├── main.tsx                React entry
+│       ├── index.css               Tailwind base
+│       ├── vite-env.d.ts           VITE _ env var types
 │       ├── pages/
 │       │   ├── LoginPage.tsx
 │       │   ├── RegisterPage.tsx
 │       │   ├── SessionsPage.tsx    Session ID entry + template picker
 │       │   ├── WorkspacePage.tsx   Workspace or replay mode (via ?replay=)
-│       │   └── InviteRedeemPage.tsx
+│       │   └── InviteRedeemPage.tsx  POST /permissions/invites/:token/redeem
 │       ├── components/
-│       │   ├── Auth/               AuthInput, ProtectedRoute
+│       │   ├── Auth/               AuthInput, ProtectedRoute (bootstrap + guard)
 │       │   ├── Editor/             CollaborativeEditor, EditorTabs, RemoteCursorStyles
 │       │   ├── FileExplorer/       FileTree, FileNode (role-gated mutation buttons)
 │       │   ├── Terminal/           TerminalPanel (forwardRef write handle)
 │       │   ├── Presence/           UserAvatars
-│       │   ├── Replay/             SessionReplay, ReplayEditorView, RecordingControls
+│       │   ├── Replay/             SessionReplay, ReplayEditorView, ReplayRoute, RecordingControls
 │       │   ├── Permissions/        SessionMembersPanel
 │       │   ├── Workspace/          WorkspaceSettingsPanel, InstallPackagesPrompt
 │       │   ├── Notifications/      Toast, ToastContainer, NotificationBell
 │       │   ├── Theme/              ThemeSwitcher
 │       │   ├── CommandPalette/     CommandPalette modal
-│       │   └── Layout/             Workspace shell, Sidebar
+│       │   └── Layout/             Workspace (main shell), Sidebar
 │       ├── hooks/                  useAuth, useYjsProvider, useAwareness, useFileTree,
 │       │                           useTerminalSocket, useSessionRole, useWorkspaceConfig,
 │       │                           useReplayEngine, useSessionRecording, useTheme,
@@ -381,8 +225,8 @@ collab-ide/
 │       ├── lib/
 │       │   ├── api/                Typed API clients: auth, files, sessions, permissions, execution
 │       │   ├── yjs/                Y.Doc registry (ref-counted), provider registry, bindings, colors
-│       │   ├── editor/             languageMap (file extension → Monaco language)
-│       │   ├── replay/             ReplayEngine (seek-to-snapshot + incremental apply)
+│       │   ├── editor/             languageMap (ext → Monaco language)
+│       │   ├── replay/             ReplayEngine class (seek-to-snapshot + incremental apply)
 │       │   ├── templates/          4 built-in project templates
 │       │   ├── theme/              Theme definitions and CSS variable application
 │       │   └── permissions/        hasAtLeastRole(), canEditFiles(), canManageRecordings()
@@ -399,142 +243,22 @@ collab-ide/
     └── nginx.conf                  Frontend nginx config
 ```
 
-</details>
+\---
 
----
+## Prerequisites
 
-## Getting Started
+|Requirement|Minimum version|Notes|
+|-|-|-|
+|Node.js|20.x|Both backend and frontend|
+|Docker|24.x|Must be running; used for sandboxed terminal containers|
+|PostgreSQL|14+|Local instance **or** use `docker compose` (includes it)|
+|Redis|7+|Local instance **or** use `docker compose` (includes it)|
 
-### Prerequisites
+\---
 
-| Requirement | Minimum Version | Notes |
-|---|---|---|
-| Node.js | 20.x | Required for both backend and frontend |
-| Docker | 24.x | Must be running; used for sandboxed terminal containers |
-| PostgreSQL | 14+ | Local instance **or** provided via `docker compose` |
-| Redis | 7+ | Local instance **or** provided via `docker compose` |
+## Environment variables
 
----
-
-### Local Development
-
-**1. Clone and copy env files**
-
-```bash
-git clone https://github.com/yourusername/collab-ide.git
-cd collab-ide
-
-cp .env.example .env
-cp backend/.env.example backend/.env
-cp frontend/.env.example frontend/.env
-```
-
-Edit `backend/.env` — at minimum, set these four values:
-
-```env
-DATABASE_URL=postgresql://postgres:postgres@localhost:5432/collab_ide
-REDIS_URL=redis://localhost:6379
-JWT_ACCESS_SECRET=<generate — see below>
-JWT_REFRESH_SECRET=<generate — must differ from ACCESS_SECRET>
-CLIENT_URL=http://localhost:5173
-```
-
-Generate secrets (run twice — one for each):
-
-```bash
-node -e "console.log(require('crypto').randomBytes(48).toString('hex'))"
-```
-
-**2. Start PostgreSQL and Redis**
-
-If you already have them running locally, skip this step. Otherwise, spin up just the database and cache via Docker Compose:
-
-```bash
-cd docker && docker compose --env-file ../.env up postgres redis -d && cd ..
-```
-
-> **Note:** `--env-file ../.env` is required here. Docker Compose only auto-loads a `.env` from its own working directory, and the file created in step 1 lives at the repo root.
-
-**3. Build the sandbox executor images**
-
-All four images are required — the backend will fail to create terminal containers without them:
-
-```bash
-docker build -t collab-ide-executor-shell:latest  -f docker/executor.shell.Dockerfile  .
-docker build -t collab-ide-executor-node:latest   -f docker/executor.node.Dockerfile   .
-docker build -t collab-ide-executor-python:latest -f docker/executor.python.Dockerfile .
-docker build -t collab-ide-executor-go:latest     -f docker/executor.go.Dockerfile     .
-```
-
-**4. Start the backend**
-
-```bash
-cd backend
-npm install
-npx prisma migrate dev --name init   # creates all tables
-npm run dev                           # ts-node-dev, hot reload on :4000
-```
-
-**5. Start the frontend**
-
-```bash
-# in a new terminal
-cd frontend
-npm install
-npm run dev                           # Vite dev server on :5173
-```
-
-Open [http://localhost:5173](http://localhost:5173).
-
----
-
-### Docker Deployment
-
-**Single-server Docker Compose**
-
-```bash
-cp .env.example .env
-# Fill in: POSTGRES_PASSWORD, JWT_ACCESS_SECRET, JWT_REFRESH_SECRET, CLIENT_URL
-
-cd docker
-docker compose --env-file ../.env build    # builds backend, frontend, all 4 executor images
-docker compose --env-file ../.env up -d    # starts postgres, redis, backend, frontend
-```
-
-Run the initial database migration:
-
-```bash
-docker compose --env-file ../.env exec backend npx prisma migrate deploy
-```
-
-| Service | Address |
-|---|---|
-| Frontend | `http://localhost:80` |
-| Backend REST + WebSockets | `http://localhost:4000` |
-| PostgreSQL | `localhost:5432` (host-published — firewall in production) |
-| Redis | `localhost:6379` (host-published — firewall in production) |
-
----
-
-### Manual / Cloud Deployment
-
-1. Provision PostgreSQL and Redis (managed services work fine — e.g. RDS + ElastiCache, Supabase + Upstash)
-2. Build and push the backend Docker image
-3. Build and push the frontend Docker image, or serve `frontend/dist/` from any static host
-4. Run `prisma migrate deploy` against your database on first deploy
-5. Build all 4 executor images on the Docker host(s) where the backend will run
-6. Set all required env vars (see [Environment Variables](#environment-variables))
-
-> **Important for multi-replica backend deployments:** The Docker daemon must be reachable from every backend replica (same host or shared socket). Terminal containers are created and attached on the same Docker host — this is not a distributed container scheduler. See [Known Limitations](#known-limitations) for details.
-
----
-
-## Environment Variables
-
-<details>
-<summary><strong>Root <code>.env</code> (Docker Compose only)</strong></summary>
-
-<br />
+### Root `.env` (compose only)
 
 ```env
 POSTGRES_USER=collab_ide_user
@@ -545,361 +269,254 @@ JWT_REFRESH_SECRET=          # required — must differ from ACCESS_SECRET
 CLIENT_URL=                  # required — e.g. http://localhost or https://your-domain.com
 ```
 
-</details>
+### `backend/.env`
 
-<details>
-<summary><strong><code>backend/.env</code></strong></summary>
+|Variable|Default|Required|Description|
+|-|-|-|-|
+|`NODE_ENV`|`development`|No|Set to `production` for prod|
+|`PORT`|`4000`|No|HTTP server port|
+|`DATABASE_URL`|—|**Yes**|PostgreSQL connection string|
+|`REDIS_URL`|—|**Yes**|Redis connection string e.g. `redis://localhost:6379`|
+|`JWT_ACCESS_SECRET`|—|**Yes**|Min 32 chars in production|
+|`JWT_REFRESH_SECRET`|—|**Yes**|Min 32 chars, must differ from access secret|
+|`ACCESS_TOKEN_TTL`|`15m`|No|Access token lifetime|
+|`REFRESH_TOKEN_TTL`|`7d`|No|Refresh token lifetime|
+|`CLIENT_URL`|—|**Yes**|Allowed CORS origin (comma-separated for multiple)|
+|`MAX_TERMINAL_SESSIONS`|`50`|No|Max concurrent terminal container connections|
+|`TERMINAL_IDLE_TIMEOUT_MS`|`600000`|No|WS idle timeout (10 min). Does NOT destroy the container|
 
-<br />
+### `frontend/.env`
 
-| Variable | Default | Required | Description |
-|---|---|---|---|
-| `NODE_ENV` | `development` | No | Set to `production` for prod |
-| `PORT` | `4000` | No | HTTP server port |
-| `DATABASE_URL` | — | **Yes** | PostgreSQL connection string |
-| `REDIS_URL` | — | **Yes** | Redis connection string, e.g. `redis://localhost:6379` |
-| `JWT_ACCESS_SECRET` | — | **Yes** | Min 32 chars in production |
-| `JWT_REFRESH_SECRET` | — | **Yes** | Min 32 chars; must differ from access secret |
-| `ACCESS_TOKEN_TTL` | `15m` | No | Access token lifetime |
-| `REFRESH_TOKEN_TTL` | `7d` | No | Refresh token lifetime |
-| `CLIENT_URL` | — | **Yes** | Allowed CORS origin (comma-separated for multiple) |
-| `MAX_TERMINAL_SESSIONS` | `50` | No | Max concurrent terminal container connections |
-| `TERMINAL_IDLE_TIMEOUT_MS` | `600000` | No | WS idle timeout (10 min). Closes the WebSocket connection, but does **not** destroy the container. |
+|Variable|Default (dev)|Description|
+|-|-|-|
+|`VITE _API _URL`|`/api`|Relative — proxied same-origin to the backend by Vite's dev server (see `vite.config.ts`)|
+|`VITE _YJS _WS _URL`|`ws://localhost:5173`|Also same-origin; Vite proxies `/ws` through to the backend|
+|`VITE _TERMINAL _WS _URL`|`ws://localhost:5173/terminal`|Also same-origin; Vite proxies `/terminal` through to the backend|
 
-</details>
+>  * *Important: * * these defaults are same-origin (port `5173`, the Vite dev server)  *on purpose *, not a mistake — the backend's refresh-token cookie is `SameSite=Lax`, which browsers won't attach to a direct cross-origin POST from `5173` to `4000`. Vite's dev proxy makes every request same-origin so the cookie actually gets sent. Don't point these at `http://localhost:4000` directly unless you've also changed the cookie's `SameSite` policy. For a real production deployment (no dev proxy), point these at your actual backend origin — see `frontend/.env.example` for the commented-out production block.
 
-<details>
-<summary><strong><code>frontend/.env</code></strong></summary>
+\---
 
-<br />
+## Local development
 
-| Variable | Default (dev) | Description |
-|---|---|---|
-| `VITE_API_URL` | `/api` | Relative path — proxied same-origin to the backend by Vite's dev server |
-| `VITE_YJS_WS_URL` | `ws://localhost:5173` | Same-origin; Vite proxies `/ws` through to the backend |
-| `VITE_TERMINAL_WS_URL` | `ws://localhost:5173/terminal` | Same-origin; Vite proxies `/terminal` through to the backend |
+### 1\. Clone and copy env files
 
-> **Why same-origin defaults?** The backend's refresh-token cookie is `SameSite=Lax`. Browsers will not attach it to a cross-origin POST from `:5173` directly to `:4000`. Vite's dev proxy makes every request same-origin so the cookie is sent correctly.
->
-> Do **not** point `VITE_YJS_WS_URL` or `VITE_TERMINAL_WS_URL` directly at `http://localhost:4000` unless you have also changed the cookie's `SameSite` policy. For production (no dev proxy), point these at your actual backend origin — see `frontend/.env.example` for the commented-out production block.
+```bash
+git clone <your-repo-url>
+cd collab-ide
 
-</details>
+cp .env.example .env
+cp backend/.env.example backend/.env
+cp frontend/.env.example frontend/.env
+```
 
----
+Edit `backend/.env` — set at minimum:
 
-## First Run Walkthrough
+```env
+DATABASE_URL=postgresql://postgres:postgres@localhost:5432/collab_ide
+REDIS_URL=redis://localhost:6379
+JWT_ACCESS_SECRET=<generate with command below>
+JWT_REFRESH_SECRET=<generate with command below — must differ>
+CLIENT_URL=http://localhost:5173
+```
 
-1. Open `http://localhost:5173` → you are redirected to `/login`
-2. Click **Register** and create an account
+Generate secrets:
+
+```bash
+node -e "console.log(require('crypto').randomBytes(48).toString('hex'))"
+# run twice — one for ACCESS_SECRET, one for REFRESH_SECRET
+```
+
+### 2\. Start PostgreSQL and Redis
+
+If you have them locally already, skip this. Otherwise use compose just for the DB and cache:
+
+```bash
+cd docker && doker compose --env-file ../.env up postgres redis -d && cd ..
+```
+
+> `--env-file ../.env` is required here: Docker Compose only auto-loads a `.env` file from its own working directory, and the file created in step 1 lives at the repo root, one level up from `docker/`.
+
+### 3\. Build the sandbox executor images
+
+All four are needed even for local dev (the backend will fail to create terminal containers without them):
+
+```bash
+docker build -t collab-ide-executor-shell:latest  -f docker/executor.shell.Dockerfile  .
+docker build -t collab-ide-executor-node:latest   -f docker/executor.node.Dockerfile   .
+docker build -t collab-ide-executor-python:latest -f docker/executor.python.Dockerfile .
+docker build -t collab-ide-executor-go:latest     -f docker/executor.go.Dockerfile     .
+```
+
+### 4\. Run the backend
+
+```bash
+cd backend
+npm install
+npx prisma migrate dev --name init    # creates all tables
+npm run dev                           # ts-node-dev, hot reload, :4000
+```
+
+### 5\. Run the frontend
+
+```bash
+# new terminal
+cd frontend
+npm install
+npm run dev                           # vite dev server, :5173
+```
+
+Open `http://localhost:5173`.
+
+\---
+
+## Production deployment
+
+### Docker Compose (single server)
+
+```bash
+cp .env.example .env
+# Fill in POSTGRES_PASSWORD, JWT_ACCESS_SECRET, JWT_REFRESH_SECRET, CLIENT_URL
+
+cd docker
+docker compose --env-file ../.env build   # builds backend, frontend, all 4 executor images
+docker compose --env-file ../.env up -d   # starts postgres, redis, backend, frontend
+docker compose --env-file ../.env exec backend npx prisma migrate deploy
+```
+
+* Frontend served at `http://localhost:80`
+* Backend REST + WebSockets at `http://localhost:4000`
+* Postgres (`5432`) and Redis (`6379`) are also published to the host to support the native-backend local-dev workflow above — firewall the host's public interface in a real deployment if they shouldn't be reachable externally
+
+### Manual / cloud deployment
+
+1. Provision PostgreSQL and Redis (managed services work fine — e.g. RDS, ElastiCache, Supabase + Upstash)
+2. Build and push the backend Docker image
+3. Build and push the frontend Docker image (or serve `frontend/dist/` via any static host)
+4. Run `prisma migrate deploy` against your database on first deploy
+5. Build all 4 executor images on the Docker host(s) the backend runs on
+6. Set all env vars (see table above)
+
+> **Important for multi-replica backend:** The Docker daemon must be reachable from every backend replica (same host or shared socket). Terminal containers are created and attached on the same Docker host — this is not a distributed container scheduler.
+
+\---
+
+## First run walkthrough
+
+1. Open `http://localhost:5173` → redirects to `/login`
+2. Click "Register" → create an account
 3. You land on `/sessions` — type any session ID (e.g. `my-project`) and press Enter
 4. The workspace opens — you are auto-enrolled as **OWNER** of this session
-5. Click the file+ icon in the Explorer header to create a file
-6. Open it and start typing — the editor is now CRDT-backed
-7. Open the same URL in a second browser profile or incognito window, log in as a different user — you will see their cursor in real time
+5. Create a file from the Explorer (the file+ icon in the Explorer header, or the folder+ icon for a folder)
+6. Open it — start typing — the editor is now CRDT-backed
+7. Open the same URL in a second browser profile or incognito window, log in as a second user — they see your cursor in real time
 8. Press **Cmd/Ctrl+K** to open the command palette
-9. Click **⚙** in the top bar to open Workspace Settings and change the runtime to **Node.js**
-10. Click **▶ Run** to execute the active file in the terminal
-11. Click **Members → Create link** to generate an invite URL with a specific role
+9. Click ⚙ in the top bar to open workspace settings — change the runtime to **Node.js**
+10. Click ▶ Run to run the active file
+11. Click **Members** → **Create link** to generate an invite URL
 
----
+\---
 
-## Roles & Permissions
+## Roles and permissions
 
-Sessions use per-session roles, fully independent of any global `User.role` field.
+Sessions use per-session roles, independent of the global `User.role`.
 
-| Role | How it's assigned | File create / edit / delete | Run / Install | Start / stop recording | Manage members & invites | Enable network |
-|---|---|---|---|---|---|---|
-| **OWNER** | First user to open a session | ✅ | ✅ | ✅ | ✅ | ✅ |
-| **EDITOR** | Invite link with EDITOR role | ✅ | ✅ | ❌ | ❌ | ❌ |
-| **VIEWER** | Invite link with VIEWER role | ❌ | ❌ | ❌ | ❌ | ❌ |
+|Role|Assigned automatically|File create/edit/delete|Run / Install|Start/stop recording|Manage members/invites|Enable network|
+|-|-|-|-|-|-|-|
+|**OWNER**|First user to open a session|✅|✅|✅|✅|✅|
+|**EDITOR**|Invite link with EDITOR role|✅|✅|❌|❌|❌|
+|**VIEWER**|Invite link with VIEWER role|❌|❌|❌|❌|❌|
 
-> **VIEWER enforcement is applied at the Yjs WebSocket protocol layer**, not only at the REST API. Mutating Yjs frames sent by a VIEWER connection are inspected using `y-protocols` and dropped before they reach the shared `Y.Doc`. A VIEWER cannot inject code changes even via a direct WebSocket client.
+> VIEWER enforcement is applied at the **Yjs WebSocket protocol layer** (mutating frames are dropped before they reach the shared doc), not just at the REST API level. This means a VIEWER cannot inject code changes even via direct WebSocket.
 
----
+\---
 
-## Workspace Runtimes
+## Workspace runtimes
 
-| Runtime | Docker Image | Shell | Run Command | Package Manager |
-|---|---|---|---|---|
-| `shell` | `collab-ide-executor-shell:latest` | `/bin/sh` | `/bin/sh <file>` | — |
-| `node` | `collab-ide-executor-node:latest` | `/bin/sh` | `node <file>` | `npm install` |
-| `python` | `collab-ide-executor-python:latest` | `/bin/sh` | `python3 <file>` | `pip install --user` |
-| `go` | `collab-ide-executor-go:latest` | `/bin/sh` | `go run <file>` | `go get` |
+|Runtime|Docker image|Shell cmd|Run cmd|Package manager|
+|-|-|-|-|-|
+|`shell`|`collab-ide-executor-shell:latest`|`/bin/sh`|`/bin/sh <file>`|None|
+|`node`|`collab-ide-executor-node:latest`|`/bin/sh`|`node <file>`|`npm install`|
+|`python`|`collab-ide-executor-python:latest`|`/bin/sh`|`python3 <file>`|`pip install --user`|
+|`go`|`collab-ide-executor-go:latest`|`/bin/sh`|`go run <file>`|`go get`|
 
-### Sandbox Constraints
+**Sandbox constraints (all runtimes):**
 
-All runtimes enforce the same resource limits at the Docker level:
+* Memory: 256 MB (hard limit, swap disabled)
+* CPU: 0.5 core
+* Process limit: 128 PIDs
+* Network: **disabled by default** (`NetworkMode: none`)
+* All Linux capabilities dropped (`CapDrop: ALL`, `no-new-privileges`)
 
-- **Memory:** 256 MB hard limit, swap disabled
-- **CPU:** 0.5 core
-- **Process limit:** 128 PIDs
-- **Network:** Disabled by default (`NetworkMode: none`)
-- **Capabilities:** All Linux capabilities dropped (`CapDrop: ALL`, `no-new-privileges`)
+**Network access for package installs:**
+Package managers need internet access (npm registry, PyPI, proxy.golang.org). Enabling it grants general internet access to the container — Docker has no built-in per-domain allowlisting without an egress proxy. It is **disabled by default**, and only session **OWNERs** can enable it from workspace settings.
 
-### Network Access for Package Installs
+**Persistent workspaces:**
+Containers are named `ws-<sessionId>` and survive client disconnects. Reconnecting reattaches to the existing container with all running processes and installed packages intact. Containers are destroyed by a background idle reaper after **4 hours of inactivity** (no terminal input/output, not `TERMINAL_IDLE_TIMEOUT_MS` which only closes the WebSocket connection).
 
-Package managers (`npm`, `pip`, `go get`) require internet access to their respective registries. Enabling network access grants **general** internet access to the container — Docker has no built-in per-domain allowlisting without an egress proxy sidecar. Network access is therefore **disabled by default** and can only be enabled by a session **OWNER** from Workspace Settings.
+\---
 
-### Persistent Workspaces
+## Session recording and replay
 
-Containers are named `ws-<sessionId>` and survive client disconnects. Reconnecting reattaches to the existing container with all running processes and installed packages intact. A background idle reaper destroys containers after **4 hours** of no terminal I/O activity.
+**Starting a recording:** Click "Record session" in the workspace header (requires OWNER role).
 
-> **Note:** `TERMINAL_IDLE_TIMEOUT_MS` only closes the WebSocket connection after inactivity — it does **not** destroy the container. Container destruction is controlled exclusively by the 4-hour idle reaper.
+**What gets recorded:**
 
----
+* Every Yjs binary update frame (CRDT document mutations)
+* Every Yjs snapshot (full doc state, every 10 seconds)
+* Every terminal output byte
+* Every terminal input byte
 
-## Session Recording & Replay
+**Viewing a replay:** Click "View replays" → latest recording opens at `?replay=<id>`. A file picker (from the existing file tree) selects which file's CRDT history to replay. Scrub the timeline, play/pause, or set speed (0.5×–4×).
 
-### Starting a Recording
+**Seeking:** The `ReplayEngine` finds the nearest `YJS_SNAPSHOT` event before the target position and only replays deltas after it — seeking is O(updates since last snapshot), not O(all updates since recording start).
 
-Click **"Record session"** in the workspace header. Requires **OWNER** role.
+\---
 
-### What Gets Recorded
+## Known limitations
 
-- Every Yjs binary update frame (CRDT document mutations)
-- Every Yjs snapshot — captured every 10 seconds for fast seeking
-- Every terminal output byte
-- Every terminal input byte
+* **Single Docker host for terminals:** All workspace containers run on the same Docker daemon. Running multiple backend replicas across different VMs requires shared Docker socket or a proper container scheduler (Kubernetes, Nomad, ECS) — not implemented.
+* **No WebRTC voice/video:** Designed for it, not built. The awareness protocol carries the plumbing; the actual RTC signalling and media tracks are absent.
+* **No fine-grained network allowlisting:** Package installs require enabling general internet access for the container. An egress proxy sidecar (e.g. Squid) could restrict outbound to registry domains only — not built.
+* **RBAC is per-session only:** There's no global admin dashboard, no cross-session user management, no team/org concept above the session level.
+* **Single-file Run:** The Run button executes one file in isolation. It doesn't understand project structure (e.g. `npm run start` for a multi-file Node project). Use the interactive terminal for that.
+* **Replay does not include file create/rename events:** The file tree state at recording start is preserved, but file-system mutations during a recording are not replayed — only text content mutations via Yjs.
+* **`npm audit` on `frontend/`:** flags a moderate advisory in `esbuild` (via Vite's dev-server-only transitive dependency — [GHSA-67mh-4wv8-2f99](https://github.com/advisories/GHSA-67mh-4wv8-2f99)). It only affects `vite dev`, not production builds (`vite build` output is unaffected), and the fix requires an untested breaking major upgrade to Vite 8. Left as-is deliberately rather than force-upgrading without validating the rest of the toolchain against it — revisit before treating this as stale.
 
-### Viewing a Replay
-
-Click **"View replays"** → the latest recording opens at `?replay=<id>`. Select which file's CRDT history to replay from the existing file tree. From the replay controls you can:
-
-- Scrub the timeline freely
-- Play / pause
-- Set playback speed (0.5×, 1×, 2×, 4×)
-- Seek to any snapshot
-
-### Seeking Performance
-
-The `ReplayEngine` finds the nearest `YJS_SNAPSHOT` event before the target position and only replays delta updates after it. Seek complexity is **O(updates since last snapshot)**, not O(all updates since recording start).
-
----
-
-## Security Considerations
-
-- **No `localStorage` token storage.** The JWT access token is kept in JavaScript memory (Zustand). The refresh token is an `httpOnly` cookie, invisible to JavaScript — eliminating the most common XSS-based token theft vector.
-- **VIEWER enforcement at the protocol layer.** REST-level checks exist, but mutating Yjs frames are dropped at the WebSocket level before reaching the shared document.
-- **Rate limiting.** Auth endpoints and file mutation routes are rate-limited via `express-rate-limit`.
-- **Security headers.** `helmet` applies a strict set of HTTP security headers to every response.
-- **Container isolation.** Every terminal container drops all Linux capabilities, disables `setuid` escalation, and enforces memory, CPU, and PID limits. Network is disabled by default.
-- **Known advisory:** `npm audit` on `frontend/` flags a moderate advisory in `esbuild` (Vite's dev-server-only transitive dependency — [GHSA-67mh-4wv8-2f99](https://github.com/advisories/GHSA-67mh-4wv8-2f99)). This only affects `vite dev`, not production builds — `vite build` output is unaffected. The fix requires an untested breaking major upgrade to Vite 8 and has been left as-is deliberately.
-
----
-
-## Design Decisions
-
-<details>
-<summary><strong>Why Yjs instead of operational transforms?</strong></summary>
-
-<br />
-
-Yjs's CRDT model eliminates the need for a central transformation server to resolve concurrent edits. Every peer can apply updates independently and converge to the same state. This makes the system more resilient and easier to reason about.
-
-</details>
-
-<details>
-<summary><strong>Why a single HTTP server for REST and both WebSocket endpoints?</strong></summary>
-
-<br />
-
-Routing all traffic through one port (4000) simplifies deployment, avoids CORS complications with WebSocket upgrades, and keeps the server topology flat. The upgrade event is routed by URL path: `/ws` for Yjs, `/terminal` for the terminal socket.
-
-</details>
-
-<details>
-<summary><strong>Why persistent containers instead of ephemeral ones?</strong></summary>
-
-<br />
-
-Recreating a container on every reconnect would destroy all installed packages and running processes. Persistent containers (named `ws-<sessionId>`) give users a genuine development environment — packages installed in one session are still there after a refresh. The idle reaper handles cleanup automatically after 4 hours of inactivity.
-
-</details>
-
-<details>
-<summary><strong>Why snapshot-accelerated replay seeking?</strong></summary>
-
-<br />
-
-Replaying every CRDT update from the start of a recording to reach an arbitrary seek position would be O(n) in the total number of updates. Storing full Y.Doc snapshots every 10 seconds reduces seek cost to O(updates since last snapshot) — typically a much smaller number, making seeks feel instant even for long recordings.
-
-</details>
-
----
-
-## Known Limitations
-
-- **Single Docker host for terminals.** All workspace containers run on the same Docker daemon. Deploying multiple backend replicas across different VMs requires a shared Docker socket or a proper container scheduler (Kubernetes, Nomad, ECS) — this is not built in.
-- **No WebRTC voice/video.** The awareness protocol carries the necessary plumbing, but the actual RTC signalling and media tracks are not implemented.
-- **No fine-grained network allowlisting.** Enabling network access for package installs grants general internet access to the container. An egress proxy sidecar (e.g. Squid) could restrict outbound to registry domains only — not built.
-- **RBAC is per-session only.** There is no global admin dashboard, no cross-session user management, and no team or organization concept above the session level.
-- **Single-file Run.** The Run button executes one file in isolation. It does not understand project structure (e.g. `npm run start` for a multi-file Node project). Use the interactive terminal for multi-file projects.
-- **Replay does not capture file system mutations.** The file tree state at recording start is preserved, but file create and rename events that happen during a recording are not replayed — only text content mutations via Yjs.
-
----
+\---
 
 ## Troubleshooting
 
-<details>
-<summary><strong><code>prisma generate</code> fails / "403 Forbidden" from binaries.prisma.sh</strong></summary>
+**`prisma generate` fails / "403 Forbidden" from binaries.prisma.sh**
+Run `npm install` — Prisma's postinstall hook downloads a native query engine binary. This requires internet access to `binaries.prisma.sh`. In restricted environments (CI without outbound network), use `PRISMA_ENGINES_CHECKSUM_IGNORE_MISSING=1` or configure `PRISMA_BINARY_TARGETS`.
 
-<br />
+**Terminal panel shows "disconnected" immediately**
 
-Prisma's postinstall hook downloads a native query engine binary, which requires internet access to `binaries.prisma.sh`. Run `npm install` in a network-connected environment. In restricted CI environments, set `PRISMA_ENGINES_CHECKSUM_IGNORE_MISSING=1` or configure `PRISMA_BINARY_TARGETS`.
+* Confirm Docker is running: `docker ps`
+* Confirm all 4 executor images exist: `docker images | grep collab-ide-executor`
+* Check backend logs for "no such image" errors
 
-</details>
+**WebSocket connection errors in browser console**
 
-<details>
-<summary><strong>Terminal panel shows "disconnected" immediately after opening</strong></summary>
+* In local dev, `VITE_YJS_WS_URL`/`VITE_TERMINAL_WS_URL` should stay pointed at `localhost:5173` (the Vite dev server) — Vite's proxy forwards `/ws` and `/terminal` through to the backend on `:4000`. Pointing them straight at `:4000` skips that proxy and reintroduces a cross-origin `SameSite=Lax` cookie problem (see the note under [Environment variables](#environment-variables)).
+* In production (no dev proxy in front), these should point at wherever the backend actually listens.
+* Both WebSocket endpoints run on the same server as REST — there is no separate port 4001 or dedicated WS server.
 
-<br />
+**"You don't have permission" when starting a recording**
+Recording requires **OWNER** role for the session. Only the first user to open a new session gets OWNER automatically. Others need an OWNER-role invite link.
 
-1. Confirm Docker is running: `docker ps`
-2. Confirm all 4 executor images are built: `docker images | grep collab-ide-executor`
-3. Check backend logs for `"no such image"` errors
+**Package installs fail with "Network access is disabled"**
+An OWNER must open **Workspace Settings** (⚙ button) and enable network access. This is intentionally off by default.
 
-</details>
+**Login works but workspace shows "No session selected"**
+The workspace route requires a `:sessionId` param — navigate to `/sessions` first and enter a session ID, or use a direct URL like `/workspace/my-project`.
 
-<details>
-<summary><strong>WebSocket connection errors in the browser console</strong></summary>
+**`tsc` fails with "Cannot find type definition file for 'vite/client'"**
+Run `npm install` in the `frontend/` directory first — the `vite` package ships this type definition.
 
-<br />
+**Changes from one user don't appear on another's screen**
 
-- In local dev, `VITE_YJS_WS_URL` and `VITE_TERMINAL_WS_URL` should point at `localhost:5173` (the Vite dev server) — Vite's proxy forwards `/ws` and `/terminal` to the backend at `:4000`. Pointing them directly at `:4000` skips the proxy and reintroduces a `SameSite=Lax` cookie problem.
-- In production (no dev proxy), these should point at wherever the backend actually listens.
-- Both WebSocket endpoints run on the same server as REST — there is no separate port 4001.
+* Check both browsers are connected to the same Yjs WS (same `VITE_YJS_WS_URL` and same `sessionId`)
+* Check backend logs for Yjs upgrade auth failures (expired/missing token)
+* Confirm Redis is running and `REDIS_URL` is correct (if running multiple backend replicas)
 
-</details>
-
-<details>
-<summary><strong>"You don't have permission" when starting a recording</strong></summary>
-
-<br />
-
-Recording requires **OWNER** role for the session. Only the first user to open a new session is automatically assigned OWNER. Other users need an OWNER-role invite link.
-
-</details>
-
-<details>
-<summary><strong>Package installs fail with "Network access is disabled"</strong></summary>
-
-<br />
-
-An OWNER must open **Workspace Settings** (⚙ button) and enable network access. This is intentionally off by default. See [Workspace Runtimes — Network Access](#workspace-runtimes) for the rationale.
-
-</details>
-
-<details>
-<summary><strong>Login works but workspace shows "No session selected"</strong></summary>
-
-<br />
-
-The workspace route requires a `:sessionId` parameter. Navigate to `/sessions` first and enter a session ID, or use a direct URL like `/workspace/my-project`.
-
-</details>
-
-<details>
-<summary><strong><code>tsc</code> fails with "Cannot find type definition file for 'vite/client'"</strong></summary>
-
-<br />
-
-Run `npm install` inside the `frontend/` directory — the `vite` package ships this type definition and must be installed first.
-
-</details>
-
-<details>
-<summary><strong>Changes from one user don't appear on another's screen</strong></summary>
-
-<br />
-
-- Confirm both browsers are connected to the same Yjs WebSocket (same `VITE_YJS_WS_URL` and same `sessionId`)
-- Check backend logs for Yjs upgrade auth failures (expired or missing token)
-- Confirm Redis is running and `REDIS_URL` is correct (required when running multiple backend replicas)
-
-</details>
-
----
-
-## Roadmap
-
-- [ ] Multi-replica terminal support (shared Docker socket or Kubernetes backend)
-- [ ] WebRTC voice / video via existing awareness protocol plumbing
-- [ ] Egress proxy sidecar for fine-grained package registry allowlisting
-- [ ] Global admin dashboard for cross-session user management
-- [ ] Multi-file Run (project-aware execution, e.g. `npm run start`)
-- [ ] File system mutation replay (create / rename events captured in recording)
-- [ ] OAuth login (GitHub, Google)
-- [ ] Persistent file storage (S3 / object store backend)
-
----
-
-## Contributing
-
-Contributions are welcome. Please open an issue before submitting a large pull request. For bug fixes and small improvements, PRs are appreciated directly.
-
-```bash
-# Fork the repo, then:
-git checkout -b feature/your-feature-name
-# Make your changes
-git commit -m "feat: describe your change"
-git push origin feature/your-feature-name
-# Open a Pull Request
-```
-
----
-
-## License
-
-This project is licensed under the [MIT License](LICENSE).
-
----
-
-## Acknowledgements
-
-- [Yjs](https://yjs.dev) — the CRDT library that makes conflict-free collaboration possible
-- [Monaco Editor](https://microsoft.github.io/monaco-editor/) — the VS Code editor engine
-- [xterm.js](https://xtermjs.org) — the browser terminal emulator
-- [Prisma](https://www.prisma.io) — the TypeScript ORM
-- [Vite](https://vitejs.dev) — the frontend build tool
-
----
-
-## Assets
-
-Referenced throughout this README and used for the repository's social preview card:
-
-```
-assets/
-├── images/
-│   ├── banner.png
-│   ├── social-preview.png
-│   └── logo.svg
-│
-├── demo/
-│   └── collab-demo.gif
-│
-├── screenshots/
-│   ├── login.png
-│   ├── dashboard.png
-│   ├── editor.png
-│   ├── multicursor.png
-│   ├── terminal.png
-│   ├── replay.png
-│   ├── settings.png
-│   ├── members.png
-│   └── command-palette.png
-│
-└── diagrams/
-    ├── architecture.png
-    ├── backend.png
-    └── frontend.png
-```
-
----
-
-<div align="center">
-
-Built by [**Shahzad**]
-
-
-</div>
