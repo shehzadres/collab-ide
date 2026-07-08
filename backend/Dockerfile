@@ -3,8 +3,8 @@ FROM node:20-alpine AS builder
 WORKDIR /app
 
 COPY package.json package-lock.json* ./
-# Copy prisma schema BEFORE npm ci so the postinstall `prisma generate` can
-# find it. Without this the schema is absent and the build fails.
+# prisma/ must be present before npm ci so the postinstall `prisma generate`
+# can locate the schema. The CLI is in devDependencies and available here.
 COPY prisma ./prisma
 RUN npm ci
 
@@ -20,11 +20,16 @@ ENV NODE_ENV=production
 RUN apk add --no-cache tini openssl
 
 COPY package.json package-lock.json* ./
-# Same requirement: prisma/ must be present before npm ci triggers postinstall.
 COPY prisma ./prisma
-RUN npm ci --omit=dev
+
+# --ignore-scripts skips the postinstall `prisma generate` — the CLI is in
+# devDependencies and is absent here. We copy the already-generated client
+# from the builder stage instead, which is correct and faster.
+RUN npm ci --omit=dev --ignore-scripts
 
 COPY --from=builder /app/dist ./dist
+# Copy the generated Prisma client produced in the builder stage.
+COPY --from=builder /app/node_modules/.prisma ./node_modules/.prisma
 
 RUN addgroup -S appgroup && adduser -S appuser -G appgroup
 USER appuser
