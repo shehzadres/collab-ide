@@ -159,31 +159,31 @@ Most collaborative coding tools are either cloud-locked, oversimplified, or don'
 
 **Login Page**
 
-![Login](./assets/screenshots/login.png)
+![Login](./assets/images/screenshots/login.png)
 
 **Session Dashboard**
 
-![Dashboard](./assets/screenshots/dashboard.png)
+![Dashboard](./assets/images/screenshots/dashboard.png)
 
 **Collaborative Editor — Monaco with File Explorer & Terminal**
 
-![Editor](./assets/screenshots/editor.png)
+![Editor](./assets/images/screenshots/editor.png)
 
 **Multi-Cursor Editing — Two Users, Live**
 
-![Multi-cursor](./assets/screenshots/multicursor.png)
+![Multi-cursor](./assets/images/screenshots/multicursor.png)
 
 **Sandboxed Terminal — Running a Node.js Script**
 
-![Terminal](./assets/screenshots/terminal.png)
+![Terminal](./assets/images/screenshots/terminal.png)
 
 **Members & Invite Management**
 
-![Members](./assets/screenshots/members.png)
+![Members](./assets/images/screenshots/members.png)
 
 **Command Palette — Fuzzy Search**
 
-![Command Palette](./assets/screenshots/command-palette.png)
+![Command Palette](./assets/images/screenshots/command-palette.png)
 
 ---
 
@@ -218,16 +218,16 @@ Browser
        └─ ...
 ```
 
-<img src="./assets/diagrams/architecture.png" alt="Architecture Diagram" width="860" />
+<img src="./assets/images/diagrams/architecture.png" alt="Architecture Diagram" width="860" />
 
 <details>
 <summary><strong>Backend & frontend layer diagrams</strong></summary>
 
 <br />
 
-![Backend Architecture](./assets/diagrams/backend.png)
+![Backend Architecture](./assets/images/diagrams/backend.png)
 
-![Frontend Architecture](./assets/diagrams/frontend.png)
+![Frontend Architecture](./assets/images/diagrams/frontend.png)
 
 </details>
 
