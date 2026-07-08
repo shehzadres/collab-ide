@@ -1,10 +1,23 @@
-<div align="center">
+# Collab IDE
 
-<img src="./assets/images/logo.png" alt="Collab IDE Logo" width="96" />
+<div align="center">
 
 <img src="./assets/images/banner.png" alt="Collab IDE Banner" width="100%" />
 
-# Collab IDE
+<br />
+
+[![License](https://img.shields.io/badge/license-MIT-blue.svg?style=for-the-badge)](#license)
+[![React](https://img.shields.io/badge/React-18-61DAFB?style=for-the-badge&logo=react&logoColor=white)](https://react.dev)
+[![TypeScript](https://img.shields.io/badge/TypeScript-5-3178C6?style=for-the-badge&logo=typescript&logoColor=white)](https://www.typescriptlang.org)
+[![Node.js](https://img.shields.io/badge/Node.js-20-339933?style=for-the-badge&logo=nodedotjs&logoColor=white)](https://nodejs.org)
+[![Express](https://img.shields.io/badge/Express-4-000000?style=for-the-badge&logo=express&logoColor=white)](https://expressjs.com)
+[![PostgreSQL](https://img.shields.io/badge/PostgreSQL-16-4169E1?style=for-the-badge&logo=postgresql&logoColor=white)](https://www.postgresql.org)
+[![Redis](https://img.shields.io/badge/Redis-7-DC382D?style=for-the-badge&logo=redis&logoColor=white)](https://redis.io)
+[![Docker](https://img.shields.io/badge/Docker-24-2496ED?style=for-the-badge&logo=docker&logoColor=white)](https://www.docker.com)
+[![Monaco Editor](https://img.shields.io/badge/Monaco-VS%20Code%20Engine-007ACC?style=for-the-badge&logo=visualstudiocode&logoColor=white)](https://microsoft.github.io/monaco-editor/)
+[![Yjs](https://img.shields.io/badge/Yjs-CRDT-F5A623?style=for-the-badge)](https://yjs.dev)
+
+<br />
 
 **A production-grade, browser-based collaborative code editor.**
 
