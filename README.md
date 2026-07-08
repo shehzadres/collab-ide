@@ -148,7 +148,7 @@ Browser
 
 ```
 collab-ide/
-├── .env.example                    Root compose vars (Postgres creds, JWT, CLIENT\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\_URL)
+├── .env.example                    Root compose vars (Postgres creds, JWT, CLIENT_URL)
 ├── .dockerignore
 ├── README.md
 │
@@ -187,7 +187,7 @@ collab-ide/
 │           └── terminal.socket.ts  Per-session Docker container attach/detach
 │
 ├── frontend/
-│   ├── .env.example                3 VITE\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\_ vars
+│   ├── .env.example                3 VITE _ vars
 │   ├── Dockerfile                  Build → nginx static serve
 │   ├── nginx.conf                  SPA fallback, gzip, asset cache headers
 │   ├── package.json
@@ -198,7 +198,7 @@ collab-ide/
 │       ├── App.tsx                 Routes: /login /register /sessions /workspace/:id /invite/:token
 │       ├── main.tsx                React entry
 │       ├── index.css               Tailwind base
-│       ├── vite-env.d.ts           VITE\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\_ env var types
+│       ├── vite-env.d.ts           VITE _ env var types
 │       ├── pages/
 │       │   ├── LoginPage.tsx
 │       │   ├── RegisterPage.tsx
@@ -261,39 +261,39 @@ collab-ide/
 ### Root `.env` (compose only)
 
 ```env
-POSTGRES\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\_USER=collab\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\_ide\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\_user
-POSTGRES\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\_PASSWORD=           # required — no default
-POSTGRES\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\_DB=collab\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\_ide
-JWT\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\_ACCESS\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\_SECRET=           # required — generate: node -e "console.log(require('crypto').randomBytes(48).toString('hex'))"
-JWT\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\_REFRESH\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\_SECRET=          # required — must differ from ACCESS\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\_SECRET
-CLIENT\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\_URL=                  # required — e.g. http://localhost or https://your-domain.com
+POSTGRES_USER=collab_ide_user
+POSTGRES_PASSWORD=           # required — no default
+POSTGRES_DB=collab_ide
+JWT_ACCESS_SECRET=           # required — generate: node -e "console.log(require('crypto').randomBytes(48).toString('hex'))"
+JWT_REFRESH_SECRET=          # required — must differ from ACCESS_SECRET
+CLIENT_URL=                  # required — e.g. http://localhost or https://your-domain.com
 ```
 
 ### `backend/.env`
 
 |Variable|Default|Required|Description|
 |-|-|-|-|
-|`NODE\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\_ENV`|`development`|No|Set to `production` for prod|
+|`NODE_ENV`|`development`|No|Set to `production` for prod|
 |`PORT`|`4000`|No|HTTP server port|
-|`DATABASE\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\_URL`|—|**Yes**|PostgreSQL connection string|
-|`REDIS\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\_URL`|—|**Yes**|Redis connection string e.g. `redis://localhost:6379`|
-|`JWT\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\_ACCESS\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\_SECRET`|—|**Yes**|Min 32 chars in production|
-|`JWT\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\_REFRESH\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\_SECRET`|—|**Yes**|Min 32 chars, must differ from access secret|
-|`ACCESS\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\_TOKEN\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\_TTL`|`15m`|No|Access token lifetime|
-|`REFRESH\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\_TOKEN\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\_TTL`|`7d`|No|Refresh token lifetime|
-|`CLIENT\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\_URL`|—|**Yes**|Allowed CORS origin (comma-separated for multiple)|
-|`MAX\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\_TERMINAL\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\_SESSIONS`|`50`|No|Max concurrent terminal container connections|
-|`TERMINAL\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\_IDLE\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\_TIMEOUT\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\_MS`|`600000`|No|WS idle timeout (10 min). Does NOT destroy the container|
+|`DATABASE_URL`|—|**Yes**|PostgreSQL connection string|
+|`REDIS_URL`|—|**Yes**|Redis connection string e.g. `redis://localhost:6379`|
+|`JWT_ACCESS_SECRET`|—|**Yes**|Min 32 chars in production|
+|`JWT_REFRESH_SECRET`|—|**Yes**|Min 32 chars, must differ from access secret|
+|`ACCESS_TOKEN_TTL`|`15m`|No|Access token lifetime|
+|`REFRESH_TOKEN_TTL`|`7d`|No|Refresh token lifetime|
+|`CLIENT_URL`|—|**Yes**|Allowed CORS origin (comma-separated for multiple)|
+|`MAX_TERMINAL_SESSIONS`|`50`|No|Max concurrent terminal container connections|
+|`TERMINAL_IDLE_TIMEOUT_MS`|`600000`|No|WS idle timeout (10 min). Does NOT destroy the container|
 
 ### `frontend/.env`
 
 |Variable|Default (dev)|Description|
 |-|-|-|
-|`VITE\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\_API\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\_URL`|`/api`|Relative — proxied same-origin to the backend by Vite's dev server (see `vite.config.ts`)|
-|`VITE\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\_YJS\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\_WS\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\_URL`|`ws://localhost:5173`|Also same-origin; Vite proxies `/ws` through to the backend|
-|`VITE\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\_TERMINAL\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\_WS\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\_URL`|`ws://localhost:5173/terminal`|Also same-origin; Vite proxies `/terminal` through to the backend|
+|`VITE _API _URL`|`/api`|Relative — proxied same-origin to the backend by Vite's dev server (see `vite.config.ts`)|
+|`VITE _YJS _WS _URL`|`ws://localhost:5173`|Also same-origin; Vite proxies `/ws` through to the backend|
+|`VITE _TERMINAL _WS _URL`|`ws://localhost:5173/terminal`|Also same-origin; Vite proxies `/terminal` through to the backend|
 
-> \\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\*Important:\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\* these defaults are same-origin (port `5173`, the Vite dev server) \\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\*on purpose\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\*, not a mistake — the backend's refresh-token cookie is `SameSite=Lax`, which browsers won't attach to a direct cross-origin POST from `5173` to `4000`. Vite's dev proxy makes every request same-origin so the cookie actually gets sent. Don't point these at `http://localhost:4000` directly unless you've also changed the cookie's `SameSite` policy. For a real production deployment (no dev proxy), point these at your actual backend origin — see `frontend/.env.example` for the commented-out production block.
+>  * *Important: * * these defaults are same-origin (port `5173`, the Vite dev server)  *on purpose *, not a mistake — the backend's refresh-token cookie is `SameSite=Lax`, which browsers won't attach to a direct cross-origin POST from `5173` to `4000`. Vite's dev proxy makes every request same-origin so the cookie actually gets sent. Don't point these at `http://localhost:4000` directly unless you've also changed the cookie's `SameSite` policy. For a real production deployment (no dev proxy), point these at your actual backend origin — see `frontend/.env.example` for the commented-out production block.
 
 \---
 
@@ -313,18 +313,18 @@ cp frontend/.env.example frontend/.env
 Edit `backend/.env` — set at minimum:
 
 ```env
-DATABASE\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\_URL=postgresql://postgres:postgres@localhost:5432/collab\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\_ide
-REDIS\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\_URL=redis://localhost:6379
-JWT\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\_ACCESS\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\_SECRET=<generate with command below>
-JWT\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\_REFRESH\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\_SECRET=<generate with command below — must differ>
-CLIENT\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\_URL=http://localhost:5173
+DATABASE_URL=postgresql://postgres:postgres@localhost:5432/collab_ide
+REDIS_URL=redis://localhost:6379
+JWT_ACCESS_SECRET=<generate with command below>
+JWT_REFRESH_SECRET=<generate with command below — must differ>
+CLIENT_URL=http://localhost:5173
 ```
 
 Generate secrets:
 
 ```bash
 node -e "console.log(require('crypto').randomBytes(48).toString('hex'))"
-# run twice — one for ACCESS\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\_SECRET, one for REFRESH\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\_SECRET
+# run twice — one for ACCESS_SECRET, one for REFRESH_SECRET
 ```
 
 ### 2\. Start PostgreSQL and Redis
@@ -332,7 +332,7 @@ node -e "console.log(require('crypto').randomBytes(48).toString('hex'))"
 If you have them locally already, skip this. Otherwise use compose just for the DB and cache:
 
 ```bash
-cd docker \\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\&\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\& docker compose --env-file ../.env up postgres redis -d \\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\&\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\& cd ..
+cd docker && doker compose --env-file ../.env up postgres redis -d && cd ..
 ```
 
 > `--env-file ../.env` is required here: Docker Compose only auto-loads a `.env` file from its own working directory, and the file created in step 1 lives at the repo root, one level up from `docker/`.
@@ -376,7 +376,7 @@ Open `http://localhost:5173`.
 
 ```bash
 cp .env.example .env
-# Fill in POSTGRES\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\_PASSWORD, JWT\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\_ACCESS\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\_SECRET, JWT\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\_REFRESH\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\_SECRET, CLIENT\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\_URL
+# Fill in POSTGRES_PASSWORD, JWT_ACCESS_SECRET, JWT_REFRESH_SECRET, CLIENT_URL
 
 cd docker
 docker compose --env-file ../.env build   # builds backend, frontend, all 4 executor images
@@ -397,7 +397,7 @@ docker compose --env-file ../.env exec backend npx prisma migrate deploy
 5. Build all 4 executor images on the Docker host(s) the backend runs on
 6. Set all env vars (see table above)
 
-> \\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\*Important for multi-replica backend:\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\* The Docker daemon must be reachable from every backend replica (same host or shared socket). Terminal containers are created and attached on the same Docker host — this is not a distributed container scheduler.
+> **Important for multi-replica backend:** The Docker daemon must be reachable from every backend replica (same host or shared socket). Terminal containers are created and attached on the same Docker host — this is not a distributed container scheduler.
 
 \---
 
@@ -427,7 +427,7 @@ Sessions use per-session roles, independent of the global `User.role`.
 |**EDITOR**|Invite link with EDITOR role|✅|✅|❌|❌|❌|
 |**VIEWER**|Invite link with VIEWER role|❌|❌|❌|❌|❌|
 
-> VIEWER enforcement is applied at the \\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\*Yjs WebSocket protocol layer\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\* (mutating frames are dropped before they reach the shared doc), not just at the REST API level. This means a VIEWER cannot inject code changes even via direct WebSocket.
+> VIEWER enforcement is applied at the **Yjs WebSocket protocol layer** (mutating frames are dropped before they reach the shared doc), not just at the REST API level. This means a VIEWER cannot inject code changes even via direct WebSocket.
 
 \---
 
@@ -452,7 +452,7 @@ Sessions use per-session roles, independent of the global `User.role`.
 Package managers need internet access (npm registry, PyPI, proxy.golang.org). Enabling it grants general internet access to the container — Docker has no built-in per-domain allowlisting without an egress proxy. It is **disabled by default**, and only session **OWNERs** can enable it from workspace settings.
 
 **Persistent workspaces:**
-Containers are named `ws-<sessionId>` and survive client disconnects. Reconnecting reattaches to the existing container with all running processes and installed packages intact. Containers are destroyed by a background idle reaper after **4 hours of inactivity** (no terminal input/output, not `TERMINAL\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\_IDLE\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\_TIMEOUT\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\_MS` which only closes the WebSocket connection).
+Containers are named `ws-<sessionId>` and survive client disconnects. Reconnecting reattaches to the existing container with all running processes and installed packages intact. Containers are destroyed by a background idle reaper after **4 hours of inactivity** (no terminal input/output, not `TERMINAL_IDLE_TIMEOUT_MS` which only closes the WebSocket connection).
 
 \---
 
@@ -469,7 +469,7 @@ Containers are named `ws-<sessionId>` and survive client disconnects. Reconnecti
 
 **Viewing a replay:** Click "View replays" → latest recording opens at `?replay=<id>`. A file picker (from the existing file tree) selects which file's CRDT history to replay. Scrub the timeline, play/pause, or set speed (0.5×–4×).
 
-**Seeking:** The `ReplayEngine` finds the nearest `YJS\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\_SNAPSHOT` event before the target position and only replays deltas after it — seeking is O(updates since last snapshot), not O(all updates since recording start).
+**Seeking:** The `ReplayEngine` finds the nearest `YJS_SNAPSHOT` event before the target position and only replays deltas after it — seeking is O(updates since last snapshot), not O(all updates since recording start).
 
 \---
 
@@ -488,7 +488,7 @@ Containers are named `ws-<sessionId>` and survive client disconnects. Reconnecti
 ## Troubleshooting
 
 **`prisma generate` fails / "403 Forbidden" from binaries.prisma.sh**
-Run `npm install` — Prisma's postinstall hook downloads a native query engine binary. This requires internet access to `binaries.prisma.sh`. In restricted environments (CI without outbound network), use `PRISMA\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\_ENGINES\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\_CHECKSUM\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\_IGNORE\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\_MISSING=1` or configure `PRISMA\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\_BINARY\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\_TARGETS`.
+Run `npm install` — Prisma's postinstall hook downloads a native query engine binary. This requires internet access to `binaries.prisma.sh`. In restricted environments (CI without outbound network), use `PRISMA_ENGINES_CHECKSUM_IGNORE_MISSING=1` or configure `PRISMA_BINARY_TARGETS`.
 
 **Terminal panel shows "disconnected" immediately**
 
@@ -498,7 +498,7 @@ Run `npm install` — Prisma's postinstall hook downloads a native query engine 
 
 **WebSocket connection errors in browser console**
 
-* In local dev, `VITE\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\_YJS\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\_WS\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\_URL`/`VITE\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\_TERMINAL\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\_WS\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\_URL` should stay pointed at `localhost:5173` (the Vite dev server) — Vite's proxy forwards `/ws` and `/terminal` through to the backend on `:4000`. Pointing them straight at `:4000` skips that proxy and reintroduces a cross-origin `SameSite=Lax` cookie problem (see the note under [Environment variables](#environment-variables)).
+* In local dev, `VITE_YJS_WS_URL`/`VITE_TERMINAL_WS_URL` should stay pointed at `localhost:5173` (the Vite dev server) — Vite's proxy forwards `/ws` and `/terminal` through to the backend on `:4000`. Pointing them straight at `:4000` skips that proxy and reintroduces a cross-origin `SameSite=Lax` cookie problem (see the note under [Environment variables](#environment-variables)).
 * In production (no dev proxy in front), these should point at wherever the backend actually listens.
 * Both WebSocket endpoints run on the same server as REST — there is no separate port 4001 or dedicated WS server.
 
@@ -516,7 +516,7 @@ Run `npm install` in the `frontend/` directory first — the `vite` package ship
 
 **Changes from one user don't appear on another's screen**
 
-* Check both browsers are connected to the same Yjs WS (same `VITE\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\_YJS\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\_WS\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\_URL` and same `sessionId`)
+* Check both browsers are connected to the same Yjs WS (same `VITE_YJS_WS_URL` and same `sessionId`)
 * Check backend logs for Yjs upgrade auth failures (expired/missing token)
-* Confirm Redis is running and `REDIS\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\_URL` is correct (if running multiple backend replicas)
+* Confirm Redis is running and `REDIS_URL` is correct (if running multiple backend replicas)
 
