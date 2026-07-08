@@ -25,19 +25,7 @@ Real-time CRDT synchronization · Multi-cursor presence · Sandboxed multi-langu
 
 <br />
 
-[![Live Demo](https://img.shields.io/badge/Live%20Demo-Visit%20Now-22c55e?style=flat-square&logo=vercel&logoColor=white)](https://your-live-demo.vercel.app)
-[![Documentation](https://img.shields.io/badge/Docs-Read%20Now-6366f1?style=flat-square&logo=readthedocs&logoColor=white)](https://yourdomain.dev/docs)
-[![Version](https://img.shields.io/github/package-json/v/yourusername/collab-ide?style=flat-square&label=version)](https://github.com/yourusername/collab-ide/releases)
-[![Build Status](https://img.shields.io/github/actions/workflow/status/shehzadres/collab-ide/ci.yml?style=flat-square&label=build)](https://github.com/shehzadres/collab-ide/actions)
-[![GitHub Stars](https://img.shields.io/github/stars/shehzadres/collab-ide?style=flat-square&logo=github&color=yellow)](https://github.com/shehzadres/collab-ide/stargazers)
-[![GitHub Forks](https://img.shields.io/github/forks/shehzadres/collab-ide?style=flat-square&logo=github)](https://github.com/shehzadres/collab-ide/network/members)
-[![Issues](https://img.shields.io/github/issues/shehzadres/collab-ide?style=flat-square)](https://github.com/shehzadres/collab-ide/issues)
-[![Last Commit](https://img.shields.io/github/last-commit/shehzadres/collab-ide?style=flat-square)](https://github.com/shehzadres/collab-ide/commits)
-[![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg?style=flat-square)](CONTRIBUTING.md)
-
-<br />
-
-[Live Demo](https://your-live-demo.vercel.app) · [Documentation](https://yourdomain.dev/docs) · [Report a Bug](https://github.com/shehzadres/collab-ide/issues) · [Request a Feature](https://github.com/shehzadres/collab-ide/issues) · [Watch the Demo]
+[Live Demo](https://your-live-demo.vercel.app) · [Documentation](https://yourdomain.dev/docs) · [Report a Bug](https://github.com/shehzadres/collab-ide/issues) · [Request a Feature](https://github.com/shehzadres/collab-ide/issues)
 
 </div>
 
@@ -913,8 +901,7 @@ assets/
 
 <div align="center">
 
-Built by [**Shahzad**](https://yourdomain.dev)
+Built by [**Shahzad**]
 
-[▶ Watch the demo](https://youtube.com/watch?v=YOUR_VIDEO_ID) · [Read the blog post](https://yourdomain.dev/blog/collab-ide)
 
 </div>
