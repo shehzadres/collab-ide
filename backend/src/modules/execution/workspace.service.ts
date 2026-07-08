@@ -9,6 +9,11 @@ const PRISMA_TO_RUNTIME: Record<string, RuntimeId> = {
   GO: "go",
 };
 
+// Maps the app's lowercase RuntimeId to the Prisma enum string value.
+// Cast to `any` is intentional: the Prisma enum type (`RuntimeId` from
+// `@prisma/client`) is only available after `prisma generate` runs, which
+// happens at build time. The values are identical strings — Prisma's
+// EnumRuntimeIdFieldUpdateOperationsInput accepts them at runtime.
 const RUNTIME_TO_PRISMA: Record<RuntimeId, string> = {
   shell: "SHELL",
   node: "NODE",
@@ -39,7 +44,8 @@ export class WorkspaceService {
     if (existing) return toWorkspaceConfig(existing);
 
     const created = await prisma.workspace.create({
-      data: { sessionId, runtime: "SHELL", networkEnabled: false },
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      data: { sessionId, runtime: "SHELL" as any, networkEnabled: false },
     });
     return toWorkspaceConfig(created);
   }
@@ -52,7 +58,8 @@ export class WorkspaceService {
     const updated = await prisma.workspace.update({
       where: { sessionId },
       data: {
-        ...(dto.runtime ? { runtime: RUNTIME_TO_PRISMA[dto.runtime] } : {}),
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        ...(dto.runtime ? { runtime: RUNTIME_TO_PRISMA[dto.runtime] as any } : {}),
         ...(dto.networkEnabled !== undefined ? { networkEnabled: dto.networkEnabled } : {}),
       },
     });
