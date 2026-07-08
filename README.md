@@ -1,6 +1,6 @@
 <div align="center">
 
-<img src="./assets/images/logo.svg" alt="Collab IDE Logo" width="96" />
+<img src="./assets/images/logo.png" alt="Collab IDE Logo" width="96" />
 
 <img src="./assets/images/banner.png" alt="Collab IDE Banner" width="100%" />
 
@@ -37,11 +37,7 @@ Real-time CRDT synchronization · Multi-cursor presence · Sandboxed multi-langu
 
 <br />
 
-<img src="./assets/demo/collab-demo.gif" alt="Collab IDE Demo" width="900" />
-
-<br />
-
-[Live Demo](https://your-live-demo.vercel.app) · [Documentation](https://yourdomain.dev/docs) · [Report a Bug](https://github.com/yourusername/collab-ide/issues) · [Request a Feature](https://github.com/yourusername/collab-ide/issues) · [Watch the Demo](https://youtube.com/watch?v=YOUR_VIDEO_ID)
+[Live Demo](https://your-live-demo.vercel.app) · [Documentation](https://yourdomain.dev/docs) · [Report a Bug](https://github.com/shehzadres/collab-ide/issues) · [Request a Feature](https://github.com/shehzadres/collab-ide/issues) · [Watch the Demo]
 
 </div>
 
@@ -180,14 +176,6 @@ Most collaborative coding tools are either cloud-locked, oversimplified, or don'
 **Sandboxed Terminal — Running a Node.js Script**
 
 ![Terminal](./assets/screenshots/terminal.png)
-
-**Session Replay — Scrubber & Playback Controls**
-
-![Replay](./assets/screenshots/replay.png)
-
-**Workspace Settings — Runtime Picker & Network Toggle**
-
-![Settings](./assets/screenshots/settings.png)
 
 **Members & Invite Management**
 
