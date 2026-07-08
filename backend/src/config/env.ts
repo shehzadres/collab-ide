@@ -44,4 +44,11 @@ export const env = {
   REDIS_URL: process.env.REDIS_URL || "redis://localhost:6379",
   MAX_TERMINAL_SESSIONS: parseInt(process.env.MAX_TERMINAL_SESSIONS || "50", 10),
   TERMINAL_IDLE_TIMEOUT_MS: parseInt(process.env.TERMINAL_IDLE_TIMEOUT_MS || "600000", 10),
+  /**
+   * DEMO_MODE disables all Docker-dependent features (terminal, run, install,
+   * workspace reset). Set to "true" for free-tier hosted deployments where
+   * Docker is unavailable. All other features remain fully operational.
+   * Restore full functionality by setting DEMO_MODE=false (or removing it).
+   */
+  DEMO_MODE: process.env.DEMO_MODE === "true",
 };

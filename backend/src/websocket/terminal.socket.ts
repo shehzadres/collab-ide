@@ -23,6 +23,15 @@ export function attachTerminalSocket(httpServer: HttpServer, path = "/terminal")
   httpServer.on("upgrade", (req, socket, head) => {
     if (!req.url?.startsWith(path)) return;
 
+    // In demo mode, reject terminal WebSocket upgrades gracefully before any
+    // Docker interaction — the frontend checks env.DEMO_MODE and hides the
+    // terminal panel entirely, so this is a belt-and-suspenders guard.
+    if (env.DEMO_MODE) {
+      socket.write("HTTP/1.1 503 Service Unavailable\r\nX-Demo-Mode: true\r\n\r\n");
+      socket.destroy();
+      return;
+    }
+
     const url = new URL(req.url, "http://localhost");
     const token = url.searchParams.get("token");
 
