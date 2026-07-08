@@ -3,22 +3,31 @@ import { workspaceService } from "./workspace.service";
 import { execInWorkspace, destroyWorkspaceContainer } from "./docker.runner";
 import { isValidRuntimeId, getRuntime } from "./runtimes";
 import { logger } from "../../utils/logger";
+import { env } from "../../config/env";
 
 const MAX_PACKAGES_PER_INSTALL = 20;
 const PACKAGE_NAME_PATTERN = /^[a-zA-Z0-9@][a-zA-Z0-9@./_-]{0,127}$/;
+
+const DEMO_MESSAGE =
+  "Code execution is disabled in the hosted demo. " +
+  "Free hosting platforms do not support Docker sandbox execution. " +
+  "Clone the repository and run it locally (or self-host) to enable the full execution environment.";
 
 export class ExecutionController {
   async getConfig(req: Request, res: Response) {
     try {
       const { sessionId } = req.params;
       const config = await workspaceService.getOrCreate(sessionId);
-      res.status(200).json({ config });
+      res.status(200).json({ config, demoMode: env.DEMO_MODE });
     } catch (err) {
       this.handleError(res, err);
     }
   }
 
   async updateRuntime(req: Request, res: Response) {
+    if (env.DEMO_MODE) {
+      return res.status(503).json({ message: DEMO_MESSAGE, demoMode: true });
+    }
     try {
       const { sessionId } = req.params;
       const { runtime } = req.body;
@@ -41,6 +50,9 @@ export class ExecutionController {
    * runtime selection only requires EDITOR+.
    */
   async updateNetworkAccess(req: Request, res: Response) {
+    if (env.DEMO_MODE) {
+      return res.status(503).json({ message: DEMO_MESSAGE, demoMode: true });
+    }
     try {
       const { sessionId } = req.params;
       const { networkEnabled } = req.body;
@@ -63,6 +75,9 @@ export class ExecutionController {
    * container is stuck, give me a clean one"), not an automatic cleanup.
    */
   async resetWorkspace(req: Request, res: Response) {
+    if (env.DEMO_MODE) {
+      return res.status(503).json({ message: DEMO_MESSAGE, demoMode: true });
+    }
     try {
       const { sessionId } = req.params;
       await destroyWorkspaceContainer(sessionId);
@@ -81,6 +96,9 @@ export class ExecutionController {
    * output stream.
    */
   async runFile(req: Request, res: Response) {
+    if (env.DEMO_MODE) {
+      return res.status(503).json({ message: DEMO_MESSAGE, demoMode: true });
+    }
     const { sessionId } = req.params;
     const { filePath } = req.body;
 
@@ -116,6 +134,9 @@ export class ExecutionController {
   }
 
   async installPackages(req: Request, res: Response) {
+    if (env.DEMO_MODE) {
+      return res.status(503).json({ message: DEMO_MESSAGE, demoMode: true });
+    }
     const { sessionId } = req.params;
     const { packages } = req.body;
 

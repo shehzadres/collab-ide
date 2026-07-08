@@ -10,6 +10,7 @@ import { NotificationBell } from "../Notifications/NotificationBell";
 import { SessionMembersPanel } from "../Permissions/SessionMembersPanel";
 import { WorkspaceSettingsPanel } from "../Workspace/WorkspaceSettingsPanel";
 import { InstallPackagesPrompt } from "../Workspace/InstallPackagesPrompt";
+import { DemoNotice } from "../Demo/DemoNotice";
 import { sessionsApi } from "../../lib/api/sessions.api";
 import { executionApi } from "../../lib/api/execution.api";
 import { useRegisterCommands } from "../../hooks/useRegisterCommands";
@@ -18,13 +19,14 @@ import { useWorkspaceConfig } from "../../hooks/useWorkspaceConfig";
 import { useEditorStore } from "../../store/editorStore";
 import { useThemeStore } from "../../store/themeStore";
 import { THEME_LIST } from "../../lib/theme/themes";
+import { DEMO_MODE } from "../../lib/config/demoMode";
 
 interface WorkspaceProps {
   roomId: string;
 }
 
 export function Workspace({ roomId }: WorkspaceProps) {
-  const [terminalOpen, setTerminalOpen] = useState(true);
+  const [terminalOpen, setTerminalOpen] = useState(!DEMO_MODE);
   const [membersOpen, setMembersOpen] = useState(false);
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [installOpen, setInstallOpen] = useState(false);
@@ -61,7 +63,7 @@ export function Workspace({ roomId }: WorkspaceProps) {
   };
 
   const handleRunActiveFile = async () => {
-    if (!activeFile || running) return;
+    if (!activeFile || running || DEMO_MODE) return;
     ensureTerminalVisible();
     setRunning(true);
     terminalRef.current?.write(`\n$ run ${activeFile.path}\n`);
@@ -77,6 +79,7 @@ export function Workspace({ roomId }: WorkspaceProps) {
   };
 
   const handleInstall = async (packages: string[]) => {
+    if (DEMO_MODE) return;
     ensureTerminalVisible();
     terminalRef.current?.write(`\n$ install ${packages.join(" ")}\n`);
     try {
@@ -90,28 +93,39 @@ export function Workspace({ roomId }: WorkspaceProps) {
 
   const commands = useMemo(
     () => [
-      {
-        id: "workspace.toggle-terminal",
-        label: terminalOpen ? "Hide terminal" : "Show terminal",
-        category: "Workspace",
-        shortcut: "Ctrl+`",
-        run: () => setTerminalOpen((v) => !v),
-      },
-      {
-        id: "workspace.run-file",
-        label: activeFile ? `Run ${activeFile.path.split("/").pop()}` : "Run active file",
-        category: "Execution",
-        run: handleRunActiveFile,
-      },
-      {
-        id: "workspace.install-packages",
-        label: "Install packages...",
-        category: "Execution",
-        run: () => setInstallOpen(true),
-      },
+      // Only register terminal toggle when execution is available
+      ...(!DEMO_MODE
+        ? [
+            {
+              id: "workspace.toggle-terminal",
+              label: terminalOpen ? "Hide terminal" : "Show terminal",
+              category: "Workspace",
+              shortcut: "Ctrl+`",
+              run: () => setTerminalOpen((v) => !v),
+            },
+          ]
+        : []),
+      // Run / Install commands omitted in demo mode so they don't appear
+      // in the command palette and confuse users.
+      ...(!DEMO_MODE && canRunOrInstall
+        ? [
+            {
+              id: "workspace.run-file",
+              label: activeFile ? `Run ${activeFile.path.split("/").pop()}` : "Run active file",
+              category: "Execution",
+              run: handleRunActiveFile,
+            },
+            {
+              id: "workspace.install-packages",
+              label: "Install packages...",
+              category: "Execution",
+              run: () => setInstallOpen(true),
+            },
+          ]
+        : []),
       {
         id: "workspace.settings",
-        label: "Workspace settings (runtime, network)",
+        label: "Workspace settings",
         category: "Execution",
         run: () => setSettingsOpen(true),
       },
@@ -152,7 +166,7 @@ export function Workspace({ roomId }: WorkspaceProps) {
         <div className="flex items-center justify-between px-3 py-1.5 bg-panel border-b border-subtle">
           <EditorTabs />
           <div className="flex items-center gap-2 pr-2">
-            {canRunOrInstall && activeFile && (
+            {!DEMO_MODE && canRunOrInstall && activeFile && (
               <button
                 onClick={handleRunActiveFile}
                 disabled={running}
@@ -162,7 +176,7 @@ export function Workspace({ roomId }: WorkspaceProps) {
                 {running ? "Running..." : "▶ Run"}
               </button>
             )}
-            {canRunOrInstall && (
+            {!DEMO_MODE && canRunOrInstall && (
               <button
                 onClick={() => setInstallOpen(true)}
                 className="text-xs text-muted hover:text-ink px-2 py-1"
@@ -173,9 +187,15 @@ export function Workspace({ roomId }: WorkspaceProps) {
             <button
               onClick={() => setSettingsOpen(true)}
               className="text-xs text-muted hover:text-ink px-2 py-1"
-              title={workspaceConfig ? `Runtime: ${workspaceConfig.runtime}` : undefined}
+              title={
+                DEMO_MODE
+                  ? "Workspace settings (demo mode)"
+                  : workspaceConfig
+                  ? `Runtime: ${workspaceConfig.runtime}`
+                  : undefined
+              }
             >
-              ⚙ {workspaceConfig ? workspaceConfig.runtime : ""}
+              ⚙ {!DEMO_MODE && workspaceConfig ? workspaceConfig.runtime : "Settings"}
             </button>
             {canManageRecording && <RecordingControls sessionId={roomId} />}
             <button
@@ -195,22 +215,28 @@ export function Workspace({ roomId }: WorkspaceProps) {
             <ThemeSwitcher />
           </div>
         </div>
+
+        {DEMO_MODE && <DemoNotice />}
+
         <div className="flex-1 flex flex-col overflow-hidden">
-          <div className={terminalOpen ? "flex-1 min-h-0" : "flex-1"}>
+          <div className={!DEMO_MODE && terminalOpen ? "flex-1 min-h-0" : "flex-1"}>
             <CollaborativeEditor roomId={roomId} />
           </div>
-          {terminalOpen && (
+          {!DEMO_MODE && terminalOpen && (
             <div className="h-64 flex-shrink-0">
               <TerminalPanel ref={terminalRef} sessionId={roomId} />
             </div>
           )}
         </div>
-        <button
-          onClick={() => setTerminalOpen((v) => !v)}
-          className="text-xs text-faint hover:text-ink px-3 py-1 bg-panel border-t border-subtle"
-        >
-          {terminalOpen ? "Hide terminal" : "Show terminal"}
-        </button>
+
+        {!DEMO_MODE && (
+          <button
+            onClick={() => setTerminalOpen((v) => !v)}
+            className="text-xs text-faint hover:text-ink px-3 py-1 bg-panel border-t border-subtle"
+          >
+            {terminalOpen ? "Hide terminal" : "Show terminal"}
+          </button>
+        )}
       </div>
 
       {membersOpen && (
@@ -229,7 +255,7 @@ export function Workspace({ roomId }: WorkspaceProps) {
         />
       )}
 
-      {installOpen && (
+      {!DEMO_MODE && installOpen && (
         <InstallPackagesPrompt
           networkEnabled={Boolean(workspaceConfig?.networkEnabled)}
           onInstall={handleInstall}
