@@ -5,7 +5,16 @@ import { redis } from "../../utils/redis";
 import { getRuntime, RuntimeId } from "./runtimes";
 import { workspaceService } from "./workspace.service";
 
-const docker = new Docker();
+// Lazy singleton — Docker is only instantiated when a function that actually
+// needs it is called. In DEMO_MODE the execution controller and terminal
+// socket return early before calling any function here, so this module is
+// imported but Docker() is never constructed and the missing socket never
+// causes a crash.
+let _docker: Docker | null = null;
+function getDocker(): Docker {
+  if (!_docker) _docker = new Docker();
+  return _docker;
+}
 
 export interface RunningSession {
   container: Docker.Container;
@@ -77,6 +86,7 @@ interface CreateOrAttachOptions {
  * action, since the entire point is surviving a disconnect.
  */
 export async function createOrAttachTerminalSession(opts: CreateOrAttachOptions): Promise<RunningSession> {
+  const docker = getDocker();
   const containerName = containerNameForSession(opts.sessionId);
 
   const existing = await findContainerByName(containerName);
@@ -164,6 +174,7 @@ export async function createOrAttachTerminalSession(opts: CreateOrAttachOptions)
 
 async function findContainerByName(name: string): Promise<Docker.Container | null> {
   try {
+    const docker = getDocker();
     const list = await docker.listContainers({ all: true, filters: JSON.stringify({ name: [name] }) });
     // Docker's name filter is a substring match, not exact — verify exact
     // match ourselves (names are prefixed with "/" in the API response).
