@@ -13,7 +13,7 @@ function makeRedisOptions(url: string): RedisOptions {
     retryStrategy: (times) => Math.min(times * 200, 2000),
     // Prevent an unhandled error from taking down the process before the
     // .on("error") handler is attached.
-    lazyConnect: false,
+    lazyConnect: true,
   };
 }
 
