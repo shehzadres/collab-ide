@@ -57,11 +57,11 @@ export class WorkspaceService {
 
     const updated = await prisma.workspace.update({
       where: { sessionId },
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       data: {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        ...(dto.runtime ? { runtime: RUNTIME_TO_PRISMA[dto.runtime] as any } : {}),
+        ...(dto.runtime ? { runtime: RUNTIME_TO_PRISMA[dto.runtime] } : {}),
         ...(dto.networkEnabled !== undefined ? { networkEnabled: dto.networkEnabled } : {}),
-      },
+      } as any,
     });
     return toWorkspaceConfig(updated);
   }
