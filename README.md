@@ -22,7 +22,8 @@ per-session role-based permissions, and invite-link collaboration.
 11. [Workspace runtimes](#workspace-runtimes)
 12. [Session recording and replay](#session-recording-and-replay)
 13. [Known limitations](#known-limitations)
-14. [Troubleshooting](#troubleshooting)
+14. [UI redesign](#ui-redesign)
+15. [Troubleshooting](#troubleshooting)
 
 \---
 
@@ -332,7 +333,7 @@ node -e "console.log(require('crypto').randomBytes(48).toString('hex'))"
 If you have them locally already, skip this. Otherwise use compose just for the DB and cache:
 
 ```bash
-cd docker && doker compose --env-file ../.env up postgres redis -d && cd ..
+cd docker && docker compose --env-file ../.env up postgres redis -d && cd ..
 ```
 
 > `--env-file ../.env` is required here: Docker Compose only auto-loads a `.env` file from its own working directory, and the file created in step 1 lives at the repo root, one level up from `docker/`.
@@ -484,6 +485,12 @@ Containers are named `ws-<sessionId>` and survive client disconnects. Reconnecti
 * **`npm audit` on `frontend/`:** flags a moderate advisory in `esbuild` (via Vite's dev-server-only transitive dependency — [GHSA-67mh-4wv8-2f99](https://github.com/advisories/GHSA-67mh-4wv8-2f99)). It only affects `vite dev`, not production builds (`vite build` output is unaffected), and the fix requires an untested breaking major upgrade to Vite 8. Left as-is deliberately rather than force-upgrading without validating the rest of the toolchain against it — revisit before treating this as stale.
 
 \---
+
+## UI redesign
+
+The interface uses a restrained graphite-and-sage visual system, Space Grotesk display typography, IBM Plex Sans interface text, and IBM Plex Mono technical labels. The dashboard, authentication screens, editor shell, explorer, tabs, terminal, and utility surfaces share a consistent spacing, border, and interaction language. See [UI_REDESIGN.md](./UI_REDESIGN.md) for the design rationale and reference patterns, and [QA_NOTES.md](./QA_NOTES.md) for verification notes and the remaining acceptance checklist.
+
+---
 
 ## Troubleshooting
 

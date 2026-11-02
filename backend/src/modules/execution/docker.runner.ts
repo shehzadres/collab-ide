@@ -5,6 +5,8 @@ import { redis } from "../../utils/redis";
 import { getRuntime, RuntimeId } from "./runtimes";
 import { workspaceService } from "./workspace.service";
 
+const tarStream = require("tar-stream") as { pack: () => any };
+
 // Lazy singleton — Docker is only instantiated when a function that actually
 // needs it is called. In DEMO_MODE the execution controller and terminal
 // socket return early before calling any function here, so this module is
@@ -30,6 +32,30 @@ export interface RunningSession {
 }
 
 const ACTIVE_SESSIONS_KEY = "terminal:active_sessions";
+const terminalSessionLocks = new Map<string, Promise<void>>();
+
+async function acquireTerminalSessionLock(sessionId: string): Promise<() => void> {
+  while (true) {
+    const pending = terminalSessionLocks.get(sessionId);
+    if (pending) {
+      await pending;
+      continue;
+    }
+
+    let release!: () => void;
+    const lock = new Promise<void>((resolve) => {
+      release = resolve;
+    });
+    terminalSessionLocks.set(sessionId, lock);
+
+    return () => {
+      if (terminalSessionLocks.get(sessionId) === lock) {
+        terminalSessionLocks.delete(sessionId);
+      }
+      release();
+    };
+  }
+}
 
 // IMPORTANT SCOPE NOTE: this counter is correct for "multiple Node processes
 // sharing one Docker host" (e.g. a few backend replicas on the same VM all
@@ -86,89 +112,116 @@ interface CreateOrAttachOptions {
  * action, since the entire point is surviving a disconnect.
  */
 export async function createOrAttachTerminalSession(opts: CreateOrAttachOptions): Promise<RunningSession> {
-  const docker = getDocker();
-  const containerName = containerNameForSession(opts.sessionId);
-
-  const existing = await findContainerByName(containerName);
-  if (existing) {
-    const info = await existing.inspect();
-    if (info.State.Running) {
-      const stream = await existing.attach({ stream: true, stdin: true, stdout: true, stderr: true });
-      await workspaceService.setContainerName(opts.sessionId, containerName);
-      logger.info(`Reattached to persistent workspace container for session ${opts.sessionId}`);
-      return { container: existing, stream, resumed: true };
-    }
-
-    // Container exists but stopped (e.g. host restarted Docker, or it was
-    // OOM-killed) — restart it rather than leaving a dead container behind
-    // under the name we need for the next create attempt.
-    try {
-      await existing.start();
-      const stream = await existing.attach({ stream: true, stdin: true, stdout: true, stderr: true });
-      await workspaceService.setContainerName(opts.sessionId, containerName);
-      logger.info(`Restarted stopped persistent workspace container for session ${opts.sessionId}`);
-      return { container: existing, stream, resumed: true };
-    } catch (err) {
-      logger.warn(`Failed to restart stopped container for session ${opts.sessionId}, recreating`, err);
-      await existing.remove({ force: true }).catch(() => {});
-    }
-  }
-
-  const current = await getActiveSessionCount();
-  if (current >= env.MAX_TERMINAL_SESSIONS) {
-    throw new Error("Server at maximum terminal session capacity, try again shortly");
-  }
-
-  const runtimeDef = getRuntime(opts.runtime);
-
-  const container = await docker.createContainer({
-    Image: runtimeDef.image,
-    name: containerName,
-    Tty: true,
-    OpenStdin: true,
-    StdinOnce: false,
-    Cmd: runtimeDef.shellCmd,
-    HostConfig: {
-      Memory: 256 * 1024 * 1024,
-      MemorySwap: 256 * 1024 * 1024,
-      NanoCpus: 500_000_000,
-      // Network is fully isolated by default. Enabling it grants the
-      // container general internet access (Docker has no built-in way to
-      // allowlist just package-registry hosts without an egress-proxy
-      // sidecar, which isn't built here) — this is an explicit, visible,
-      // per-session opt-in surfaced in the UI, not a silent default change.
-      NetworkMode: opts.networkEnabled ? "bridge" : "none",
-      AutoRemove: false,
-      ReadonlyRootfs: false,
-      PidsLimit: 128,
-      CapDrop: ["ALL"],
-      SecurityOpt: ["no-new-privileges"],
-    },
-  });
-
-  await incrementActiveSessions();
+  const releaseLock = await acquireTerminalSessionLock(opts.sessionId);
 
   try {
-    await container.start();
-
-    const stream = await container.attach({
-      stream: true,
+    const docker = getDocker();
+    const containerName = containerNameForSession(opts.sessionId);
+    const attachOptions = {
+      _query: { stream: true, stdin: true, stdout: true, stderr: true },
+      _body: {},
+      hijack: true,
       stdin: true,
-      stdout: true,
-      stderr: true,
-    });
+    } as any;
 
-    logger.info(`Created persistent workspace container for session ${opts.sessionId} (runtime=${opts.runtime})`);
-    await workspaceService.setContainerName(opts.sessionId, containerName);
-    return { container, stream, resumed: false };
-  } catch (err) {
-    await decrementActiveSessions();
-    try {
-      await container.remove({ force: true });
-    } catch {
-      // already gone
+    const existing = await findContainerByName(containerName);
+    if (existing) {
+      const info = await existing.inspect();
+      if (info.State.Running) {
+        const stream = await existing.attach(attachOptions);
+        await workspaceService.setContainerName(opts.sessionId, containerName);
+        await incrementActiveSessions();
+        logger.info(`Reattached to persistent workspace container for session ${opts.sessionId}`);
+        return { container: existing, stream, resumed: true };
+      }
+
+      try {
+        await existing.start();
+        const stream = await existing.attach(attachOptions);
+        await workspaceService.setContainerName(opts.sessionId, containerName);
+        await incrementActiveSessions();
+        logger.info(`Restarted stopped persistent workspace container for session ${opts.sessionId}`);
+        return { container: existing, stream, resumed: true };
+      } catch (err) {
+        logger.warn(`Failed to restart stopped container for session ${opts.sessionId}, recreating`, err);
+        await existing.remove({ force: true }).catch(() => {});
+      }
     }
-    throw err;
+
+    const current = await getActiveSessionCount();
+    if (current >= env.MAX_TERMINAL_SESSIONS) {
+      throw new Error("Server at maximum terminal session capacity, try again shortly");
+    }
+
+    const runtimeDef = getRuntime(opts.runtime);
+    const createOptions: Docker.ContainerCreateOptions = {
+      Image: runtimeDef.image,
+      name: containerName,
+      Tty: true,
+      OpenStdin: true,
+      StdinOnce: false,
+      Cmd: runtimeDef.shellCmd,
+      HostConfig: {
+        Memory: 256 * 1024 * 1024,
+        MemorySwap: 256 * 1024 * 1024,
+        NanoCpus: 500_000_000,
+        NetworkMode: opts.networkEnabled ? "bridge" : "none",
+        AutoRemove: false,
+        ReadonlyRootfs: false,
+        PidsLimit: 128,
+        CapDrop: ["ALL"],
+        SecurityOpt: ["no-new-privileges"],
+      },
+    };
+
+    let container: Docker.Container;
+    try {
+      container = await docker.createContainer(createOptions);
+    } catch (err) {
+      const statusCode = typeof err === "object" && err !== null && "statusCode" in err
+        ? Number((err as { statusCode: unknown }).statusCode)
+        : 0;
+
+      if (statusCode !== 409) throw err;
+
+      // Another backend process may have created this deterministic
+      // workspace name between our lookup and create request. Attach to that
+      // container instead of failing the terminal connection.
+      const racedContainer = await findContainerByName(containerName);
+      if (!racedContainer) throw err;
+
+      for (let attempt = 0; attempt < 5; attempt += 1) {
+        const state = await racedContainer.inspect();
+        if (state.State.Running) {
+          const stream = await racedContainer.attach(attachOptions);
+          await workspaceService.setContainerName(opts.sessionId, containerName);
+          await incrementActiveSessions();
+          logger.info(`Attached to workspace created concurrently for session ${opts.sessionId}`);
+          return { container: racedContainer, stream, resumed: true };
+        }
+        await new Promise((resolve) => setTimeout(resolve, 100));
+      }
+
+      throw new Error(`Workspace container ${containerName} was created but did not start`);
+    }
+
+    try {
+      await container.start();
+      const stream = await container.attach(attachOptions);
+      await workspaceService.setContainerName(opts.sessionId, containerName);
+      await incrementActiveSessions();
+      logger.info(`Created persistent workspace container for session ${opts.sessionId} (runtime=${opts.runtime})`);
+      return { container, stream, resumed: false };
+    } catch (err) {
+      try {
+        await container.remove({ force: true });
+      } catch {
+        // already gone
+      }
+      throw err;
+    }
+  } finally {
+    releaseLock();
   }
 }
 
@@ -185,6 +238,51 @@ async function findContainerByName(name: string): Promise<Docker.Container | nul
     logger.error(`Failed to look up container by name ${name}`, err);
     return null;
   }
+}
+
+export async function syncWorkspaceFiles(
+  sessionId: string,
+  files: Array<{ path: string; content: string }>
+): Promise<void> {
+  if (files.length === 0) return;
+  if (files.length > 500) throw new Error("Workspace contains too many files to sync at once");
+
+  const entries = files.map((file) => {
+    let relativePath = file.path.split(String.fromCharCode(92)).join("/");
+    while (relativePath.startsWith("/")) relativePath = relativePath.slice(1);
+    const segments = relativePath.split("/");
+    if (!relativePath || segments.some((part) => !part || part === "." || part === "..")) {
+      throw new Error(`Invalid workspace path: ${file.path}`);
+    }
+    return { name: relativePath, content: Buffer.from(file.content, "utf8") };
+  });
+
+  const totalBytes = entries.reduce((total, entry) => total + entry.content.byteLength, 0);
+  if (totalBytes > 20 * 1024 * 1024) {
+    throw new Error("Workspace files exceed the 20 MB execution sync limit");
+  }
+
+  const containerName = containerNameForSession(sessionId);
+  const container = await findContainerByName(containerName);
+  if (!container) throw new Error("No active workspace container for this session. Open the terminal first.");
+
+  const info = await container.inspect();
+  if (!info.State.Running) throw new Error("Workspace container is not running.");
+
+  const pack = tarStream.pack();
+  const archive = await new Promise<Buffer>((resolve, reject) => {
+    const chunks: Buffer[] = [];
+    pack.on("data", (chunk: Buffer) => chunks.push(Buffer.from(chunk)));
+    pack.once("error", reject);
+    pack.once("end", () => resolve(Buffer.concat(chunks)));
+
+    for (const entry of entries) {
+      pack.entry({ name: entry.name, mode: 0o644 }, entry.content);
+    }
+    pack.finalize();
+  });
+
+  await container.putArchive(archive, { path: "/workspace" });
 }
 
 export async function resizeTerminal(container: Docker.Container, cols: number, rows: number): Promise<void> {
@@ -249,9 +347,10 @@ export async function execInWorkspace(
     AttachStdout: true,
     AttachStderr: true,
     Tty: true,
+    WorkingDir: "/workspace",
   });
 
-  const stream = await exec.start({ hijack: true, stdin: false });
+  const stream = await exec.start({ hijack: true, stdin: false, _body: {} } as any);
 
   return new Promise((resolve, reject) => {
     stream.on("data", (chunk: Buffer) => onOutput(chunk));

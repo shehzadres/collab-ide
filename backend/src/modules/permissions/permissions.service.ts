@@ -18,10 +18,23 @@ export class PermissionsService {
     const anyMemberExists = await prisma.sessionMember.findFirst({ where: { sessionId } });
     const role: Role = anyMemberExists ? defaultRole : "OWNER";
 
-    const created = await prisma.sessionMember.create({
-      data: { sessionId, userId, role },
-    });
-    return created.role as Role;
+    try {
+      const created = await prisma.sessionMember.create({
+        data: { sessionId, userId, role },
+      });
+      return created.role as Role;
+    } catch (error: any) {
+      // Concurrent requests can both pass the initial lookup. If another
+      // request created this membership first, reuse it instead of surfacing
+      // a unique-constraint error to the client.
+      if (error?.code === "P2002") {
+        const concurrentMember = await prisma.sessionMember.findUnique({
+          where: { sessionId_userId: { sessionId, userId } },
+        });
+        if (concurrentMember) return concurrentMember.role as Role;
+      }
+      throw error;
+    }
   }
 
   async getRole(sessionId: string, userId: string): Promise<Role | null> {

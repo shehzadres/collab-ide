@@ -24,6 +24,7 @@ export class FilesService {
         isFolder: dto.isFolder,
         parentId: dto.parentId ?? null,
         sessionId: dto.sessionId,
+        content: dto.isFolder ? "" : dto.content ?? "",
         ownerId,
       },
     });
@@ -61,6 +62,14 @@ export class FilesService {
           children: f.isFolder ? this.buildTree(files, f.id, nextVisiting) : undefined,
         };
       });
+  }
+
+  async getContents(sessionId: string) {
+    return prisma.file.findMany({
+      where: { sessionId, isFolder: false },
+      select: { path: true, content: true },
+      orderBy: { path: "asc" },
+    });
   }
 
   async getById(id: string) {
