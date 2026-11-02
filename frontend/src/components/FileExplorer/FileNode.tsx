@@ -52,7 +52,7 @@ function RowAction({
       type="button"
       title={title}
       onClick={onClick}
-      className={`flex items-center justify-center w-5 h-5 rounded text-faint transition-colors ${toneClass}`}
+      className={`ide-row-action flex items-center justify-center w-5 h-5 rounded text-faint transition-colors ${toneClass}`}
     >
       {children}
     </button>
@@ -99,7 +99,7 @@ export function FileNode({ node, depth, canEdit, onSelectFile, onCreateChild, on
   return (
     <div>
       <div
-        className="relative flex items-center gap-1.5 pr-2 py-1 text-sm text-ink hover:bg-hover cursor-pointer group"
+        className="ide-file-row relative flex items-center gap-1.5 pr-2 py-1 text-sm text-ink hover:bg-hover cursor-pointer group"
         style={{ paddingLeft: depth * 14 + 8 }}
         onClick={handleClick}
       >
@@ -120,7 +120,7 @@ export function FileNode({ node, depth, canEdit, onSelectFile, onCreateChild, on
           {node.isFolder && <ChevronRight size={12} strokeWidth={2.5} />}
         </span>
 
-        <span className="shrink-0 text-faint">
+        <span className="ide-file-icon shrink-0 text-faint">
           {node.isFolder ? (
             <FolderIcon size={ICON_SIZE} strokeWidth={1.75} />
           ) : (
@@ -146,7 +146,7 @@ export function FileNode({ node, depth, canEdit, onSelectFile, onCreateChild, on
             className="bg-hover border border-accent rounded px-1 py-0 text-xs text-ink flex-1 outline-none"
           />
         ) : (
-          <span className="flex-1 truncate">{node.name}</span>
+          <span className="ide-file-label flex-1 truncate">{node.name}</span>
         )}
 
         {canEdit && !renaming && (

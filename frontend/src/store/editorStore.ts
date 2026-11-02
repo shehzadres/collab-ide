@@ -7,6 +7,7 @@ interface EditorState {
   setActiveFile: (file: EditorFile) => void;
   openFile: (file: EditorFile) => void;
   closeFile: (id: string) => void;
+  updateFileContent: (id: string, content: string) => void;
 }
 
 export const useEditorStore = create<EditorState>((set, get) => ({
@@ -26,6 +27,15 @@ export const useEditorStore = create<EditorState>((set, get) => ({
       next[existingIndex] = file;
       set({ openFiles: next, activeFile: file });
     }
+  },
+
+  updateFileContent: (id, content) => {
+    const { openFiles, activeFile } = get();
+    const nextFiles = openFiles.map((file) => file.id === id ? { ...file, content } : file);
+    set({
+      openFiles: nextFiles,
+      activeFile: activeFile?.id === id ? { ...activeFile, content } : activeFile,
+    });
   },
 
   closeFile: (id) => {

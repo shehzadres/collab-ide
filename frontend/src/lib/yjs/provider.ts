@@ -8,7 +8,7 @@ interface ProviderEntry {
 
 const providers = new Map<string, ProviderEntry>();
 
-const WS_URL = import.meta.env.VITE_YJS_WS_URL || `${location.protocol === "https:" ? "wss" : "ws"}://${location.host}`;
+const WS_URL = import.meta.env.VITE_YJS_WS_URL || `${location.protocol === "https:" ? "wss" : "ws"}://${location.host}/ws`;
 
 export function getYProvider(roomId: string, doc: Y.Doc, token: string): WebsocketProvider {
   let entry = providers.get(roomId);

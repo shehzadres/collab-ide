@@ -1,5 +1,6 @@
 import { useState, FormEvent } from "react";
 import { Link } from "react-router-dom";
+import { ArrowRight } from "lucide-react";
 import { useAuth } from "../hooks/useAuth";
 import { AuthInput } from "../components/Auth/AuthInput";
 import { AuthCard } from "../components/Auth/AuthCard";
@@ -16,26 +17,25 @@ export default function RegisterPage() {
   };
 
   return (
-    <AuthCard title="Create account" onSubmit={handleSubmit}>
-      <AuthInput label="Email" type="email" value={email} onChange={setEmail} required />
-      <AuthInput label="Username" type="text" value={username} onChange={setUsername} required />
-      <AuthInput label="Password" type="password" value={password} onChange={setPassword} required />
+    <AuthCard
+      eyebrow="Start building together"
+      title="Create your account"
+      subtitle="A few details, then you're ready to open your first shared workspace."
+      onSubmit={handleSubmit}
+    >
+      <AuthInput label="Email" type="email" value={email} onChange={setEmail} placeholder="you@company.com" required />
+      <AuthInput label="Username" type="text" value={username} onChange={setUsername} placeholder="How your team will see you" required />
+      <AuthInput label="Password" type="password" value={password} onChange={setPassword} placeholder="Create a strong password" required />
 
-      {error && <p className="text-sm text-danger">{error}</p>}
+      {error && <p className="auth-error" role="alert">{error}</p>}
 
-      <button
-        type="submit"
-        disabled={loading}
-        className="bg-accent hover:bg-accent-hover disabled:opacity-50 text-accent-fg rounded-md py-2 text-sm font-medium transition"
-      >
-        {loading ? "Creating account..." : "Create account"}
+      <button type="submit" disabled={loading} className="auth-submit">
+        <span>{loading ? "Creating account..." : "Create account"}</span>
+        {!loading && <ArrowRight size={16} />}
       </button>
 
-      <p className="text-sm text-muted text-center">
-        Already have an account?{" "}
-        <Link to="/login" className="text-accent hover:underline">
-          Sign in
-        </Link>
+      <p className="auth-switch">
+        Already have an account? <Link to="/login">Sign in</Link>
       </p>
     </AuthCard>
   );

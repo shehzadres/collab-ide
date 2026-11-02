@@ -1,4 +1,4 @@
-import { FilePlus, FolderPlus, FolderOpen } from "lucide-react";
+import { FilePlus, FolderPlus, FolderOpen, FileCode2 } from "lucide-react";
 import { useEditorStore } from "../../store/editorStore";
 import { useFileTree } from "../../hooks/useFileTree";
 import { useSessionRole } from "../../hooks/useSessionRole";
@@ -16,9 +16,6 @@ export function FileTree({ sessionId }: FileTreeProps) {
   const { tree, createNode, deleteNode, renameNode } = useFileTree(sessionId);
   const { openFile } = useEditorStore();
   const pushNotification = useNotificationStore((s) => s.push);
-  // Mirrors the backend's actual enforcement (requireFileSessionRole("EDITOR")
-  // on files.routes.ts) — this only hides buttons that would otherwise fail
-  // server-side; it isn't itself the security boundary.
   const { hasAtLeast } = useSessionRole(sessionId);
   const canEdit = hasAtLeast("EDITOR");
 
@@ -75,10 +72,6 @@ export function FileTree({ sessionId }: FileTreeProps) {
     });
   };
 
-  // Deletion confirmation now lives inline in FileNode itself (an armed,
-  // two-click "confirm" state on the trash icon) rather than here — a native
-  // confirm() dialog renders in OS chrome and breaks the editor's visual
-  // frame, so the confirmation step needed to move into the row itself.
   const handleDelete = async (node: FileTreeNode) => {
     await deleteNode(node.id);
   };
@@ -88,61 +81,63 @@ export function FileTree({ sessionId }: FileTreeProps) {
   };
 
   return (
-    <div className="w-60 h-full bg-panel border-r border-subtle flex flex-col overflow-y-auto">
-      <div className="flex items-center justify-between px-3 py-2 border-b border-subtle">
-        <span className="text-xs font-semibold text-muted uppercase tracking-wide">Explorer</span>
+    <aside className="ide-sidebar">
+      <div className="ide-sidebar-heading">
+        <div>
+          <span className="ide-sidebar-overline">PROJECT</span>
+          <strong>Explorer</strong>
+        </div>
         {canEdit && (
-          <div className="flex items-center gap-0.5">
-            <button
-              type="button"
-              onClick={() => handleCreateRoot(false)}
-              className="flex items-center justify-center w-5 h-5 rounded text-faint hover:text-accent hover:bg-accent/10 transition-colors"
-              title="New file"
-            >
-              <FilePlus size={13} strokeWidth={1.75} />
+          <div className="ide-sidebar-actions">
+            <button type="button" onClick={() => handleCreateRoot(false)} title="New file" aria-label="New file">
+              <FilePlus size={16} />
             </button>
-            <button
-              type="button"
-              onClick={() => handleCreateRoot(true)}
-              className="flex items-center justify-center w-5 h-5 rounded text-faint hover:text-accent hover:bg-accent/10 transition-colors"
-              title="New folder"
-            >
-              <FolderPlus size={13} strokeWidth={1.75} />
+            <button type="button" onClick={() => handleCreateRoot(true)} title="New folder" aria-label="New folder">
+              <FolderPlus size={16} />
             </button>
           </div>
         )}
       </div>
 
-      {tree.length === 0 ? (
-        <div className="flex-1 flex flex-col items-center justify-center gap-2 px-6 text-center">
-          <FolderOpen size={22} strokeWidth={1.5} className="text-faint" />
-          <p className="text-xs text-faint">No files yet</p>
-          {canEdit && (
-            <button
-              type="button"
-              onClick={() => handleCreateRoot(false)}
-              className="text-xs text-accent hover:underline"
-            >
-              Create your first file
-            </button>
-          )}
-        </div>
-      ) : (
-        <div className="flex-1 py-1">
-          {tree.map((node) => (
-            <FileNode
-              key={node.id}
-              node={node}
-              depth={0}
-              canEdit={canEdit}
-              onSelectFile={handleSelectFile}
-              onCreateChild={handleCreateChild}
-              onDelete={handleDelete}
-              onRename={handleRename}
-            />
-          ))}
-        </div>
-      )}
-    </div>
+      <div className="ide-tree-caption">
+        <span>WORKSPACE FILES</span>
+        <span>{tree.length.toString().padStart(2, "0")}</span>
+      </div>
+
+      <div className="ide-tree-scroll">
+        {tree.length === 0 ? (
+          <div className="ide-tree-empty">
+            <span className="ide-tree-empty-icon"><FolderOpen size={22} strokeWidth={1.5} /></span>
+            <strong>No files yet</strong>
+            <p>Your project starts with a file.</p>
+            {canEdit && (
+              <button type="button" onClick={() => handleCreateRoot(false)}>
+                <FileCode2 size={14} /> Create a file
+              </button>
+            )}
+          </div>
+        ) : (
+          <div className="ide-file-tree">
+            {tree.map((node) => (
+              <FileNode
+                key={node.id}
+                node={node}
+                depth={0}
+                canEdit={canEdit}
+                onSelectFile={handleSelectFile}
+                onCreateChild={handleCreateChild}
+                onDelete={handleDelete}
+                onRename={handleRename}
+              />
+            ))}
+          </div>
+        )}
+      </div>
+
+      <div className="ide-sidebar-footer">
+        <span className="ide-sidebar-footer-dot" />
+        <span>{canEdit ? "You can edit this workspace" : "Read-only access"}</span>
+      </div>
+    </aside>
   );
 }

@@ -1,3 +1,5 @@
+import type { RuntimeId } from "./execution.types";
+
 export interface TemplateFile {
   path: string;
   content: string;
@@ -6,6 +8,7 @@ export interface TemplateFile {
 
 export interface ProjectTemplate {
   id: string;
+  runtime?: RuntimeId;
   label: string;
   description: string;
   language: string;

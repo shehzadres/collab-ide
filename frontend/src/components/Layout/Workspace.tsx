@@ -1,9 +1,20 @@
-import { useState, useMemo, useRef } from "react";
+import { useState, useMemo, useRef, lazy, Suspense } from "react";
 import { useNavigate } from "react-router-dom";
+import {
+  ArrowLeft,
+  Code2,
+  Command,
+  History,
+  PackagePlus,
+  PanelBottom,
+  Play,
+  Settings2,
+  Users,
+} from "lucide-react";
 import { FileTree } from "../FileExplorer/FileTree";
 import { EditorTabs } from "../Editor/EditorTabs";
 import { CollaborativeEditor } from "../Editor/CollaborativeEditor";
-import { TerminalPanel, TerminalPanelHandle } from "../Terminal/TerminalPanel";
+import type { TerminalPanelHandle } from "../Terminal/TerminalPanel";
 import { RecordingControls } from "../Replay/RecordingControls";
 import { ThemeSwitcher } from "../Theme/ThemeSwitcher";
 import { NotificationBell } from "../Notifications/NotificationBell";
@@ -13,6 +24,7 @@ import { InstallPackagesPrompt } from "../Workspace/InstallPackagesPrompt";
 import { DemoNotice } from "../Demo/DemoNotice";
 import { sessionsApi } from "../../lib/api/sessions.api";
 import { executionApi } from "../../lib/api/execution.api";
+import { filesApi } from "../../lib/api/files.api";
 import { useRegisterCommands } from "../../hooks/useRegisterCommands";
 import { useSessionRole } from "../../hooks/useSessionRole";
 import { useWorkspaceConfig } from "../../hooks/useWorkspaceConfig";
@@ -20,6 +32,8 @@ import { useEditorStore } from "../../store/editorStore";
 import { useThemeStore } from "../../store/themeStore";
 import { THEME_LIST } from "../../lib/theme/themes";
 import { DEMO_MODE } from "../../lib/config/demoMode";
+
+const LazyTerminalPanel = lazy(() => import("../Terminal/TerminalPanel").then((module) => ({ default: module.TerminalPanel })));
 
 interface WorkspaceProps {
   roomId: string;
@@ -38,23 +52,22 @@ export function Workspace({ roomId }: WorkspaceProps) {
   const activeFile = useEditorStore((s) => s.activeFile);
   const terminalRef = useRef<TerminalPanelHandle>(null);
 
-  // VIEWER is enforced as genuinely read-only at the Yjs WebSocket layer on
-  // the backend (see yjs.server.ts's wrapReadOnlySocket) and at the REST
-  // layer for file mutations — this is the UI reflecting that, not the
-  // enforcement itself. Removing this check would not let a VIEWER bypass
-  // anything; it would just mean they see controls that fail when clicked.
   const canManageRecording = hasAtLeast("OWNER");
   const canManageMembers = hasAtLeast("OWNER");
   const canManageNetwork = hasAtLeast("OWNER");
   const canRunOrInstall = hasAtLeast("EDITOR");
 
   const handleViewRecordings = async () => {
-    const recordings = await sessionsApi.list(roomId);
-    const latest = recordings[0];
-    if (latest) {
-      navigate(`/workspace/${roomId}?replay=${latest.id}`);
-    } else {
-      alert("No recordings yet for this session.");
+    try {
+      const recordings = await sessionsApi.list(roomId);
+      const latest = recordings[0];
+      if (latest) {
+        navigate(`/workspace/${encodeURIComponent(roomId)}?replay=${latest.id}`);
+      } else {
+        alert("No recordings yet for this session.");
+      }
+    } catch (err) {
+      alert(err instanceof Error ? err.message : "Could not load recordings.");
     }
   };
 
@@ -68,6 +81,7 @@ export function Workspace({ roomId }: WorkspaceProps) {
     setRunning(true);
     terminalRef.current?.write(`\n$ run ${activeFile.path}\n`);
     try {
+      await filesApi.updateContent(activeFile.id, activeFile.content);
       await executionApi.runFile(roomId, activeFile.path, (chunk) => {
         terminalRef.current?.write(chunk);
       });
@@ -93,20 +107,15 @@ export function Workspace({ roomId }: WorkspaceProps) {
 
   const commands = useMemo(
     () => [
-      // Only register terminal toggle when execution is available
       ...(!DEMO_MODE
-        ? [
-            {
-              id: "workspace.toggle-terminal",
-              label: terminalOpen ? "Hide terminal" : "Show terminal",
-              category: "Workspace",
-              shortcut: "Ctrl+`",
-              run: () => setTerminalOpen((v) => !v),
-            },
-          ]
+        ? [{
+            id: "workspace.toggle-terminal",
+            label: terminalOpen ? "Hide terminal" : "Show terminal",
+            category: "Workspace",
+            shortcut: "Ctrl+`",
+            run: () => setTerminalOpen((v) => !v),
+          }]
         : []),
-      // Run / Install commands omitted in demo mode so they don't appear
-      // in the command palette and confuse users.
       ...(!DEMO_MODE && canRunOrInstall
         ? [
             {
@@ -143,7 +152,7 @@ export function Workspace({ roomId }: WorkspaceProps) {
       },
       {
         id: "workspace.back-to-sessions",
-        label: "Back to sessions",
+        label: "Back to workspaces",
         category: "Workspace",
         run: () => navigate("/sessions"),
       },
@@ -155,88 +164,98 @@ export function Workspace({ roomId }: WorkspaceProps) {
         run: () => setTheme(t.id),
       })),
     ],
-    [terminalOpen, roomId, activeFile?.id, running]
+    [terminalOpen, roomId, activeFile?.id, running, canRunOrInstall]
   );
   useRegisterCommands(commands);
 
   return (
-    <div className="flex flex-1 h-screen overflow-hidden">
-      <FileTree sessionId={roomId} />
-      <div className="flex flex-col flex-1 overflow-hidden">
-        <div className="flex items-center justify-between px-3 py-1.5 bg-panel border-b border-subtle">
-          <EditorTabs />
-          <div className="flex items-center gap-2 pr-2">
-            {!DEMO_MODE && canRunOrInstall && activeFile && (
-              <button
-                onClick={handleRunActiveFile}
-                disabled={running}
-                title={`Run ${activeFile.path} with the ${workspaceConfig?.runtime ?? ""} runtime`}
-                className="text-xs bg-success/20 text-success hover:bg-success/30 disabled:opacity-50 rounded px-2 py-1"
-              >
-                {running ? "Running..." : "▶ Run"}
-              </button>
-            )}
-            {!DEMO_MODE && canRunOrInstall && (
-              <button
-                onClick={() => setInstallOpen(true)}
-                className="text-xs text-muted hover:text-ink px-2 py-1"
-              >
-                Install
-              </button>
-            )}
-            <button
-              onClick={() => setSettingsOpen(true)}
-              className="text-xs text-muted hover:text-ink px-2 py-1"
-              title={
-                DEMO_MODE
-                  ? "Workspace settings (demo mode)"
-                  : workspaceConfig
-                  ? `Runtime: ${workspaceConfig.runtime}`
-                  : undefined
-              }
-            >
-              ⚙ {!DEMO_MODE && workspaceConfig ? workspaceConfig.runtime : "Settings"}
-            </button>
-            {canManageRecording && <RecordingControls sessionId={roomId} />}
-            <button
-              onClick={handleViewRecordings}
-              className="text-xs text-muted hover:text-ink px-2 py-1"
-            >
-              View replays
-            </button>
-            <button
-              onClick={() => setMembersOpen(true)}
-              className="text-xs text-muted hover:text-ink px-2 py-1"
-              title={role ? `Your role: ${role}` : undefined}
-            >
-              Members{role ? ` (${role})` : ""}
-            </button>
-            <NotificationBell />
-            <ThemeSwitcher />
-          </div>
+    <div className="ide-frame">
+      <header className="ide-topbar">
+        <a href="/sessions" className="ide-brand" aria-label="Collab IDE home">
+          <span className="ide-brand-mark"><Code2 size={17} /></span>
+          <span>collab<span>ide</span></span>
+        </a>
+        <span className="ide-topbar-divider" />
+        <button type="button" onClick={() => navigate("/sessions")} className="ide-back-button" title="Back to workspaces">
+          <ArrowLeft size={16} />
+        </button>
+        <div className="ide-session-meta">
+          <span>WORKSPACE</span>
+          <strong>{roomId}</strong>
         </div>
-
-        {DEMO_MODE && <DemoNotice />}
-
-        <div className="flex-1 flex flex-col overflow-hidden">
-          <div className={!DEMO_MODE && terminalOpen ? "flex-1 min-h-0" : "flex-1"}>
-            <CollaborativeEditor roomId={roomId} />
-          </div>
-          {!DEMO_MODE && terminalOpen && (
-            <div className="h-64 flex-shrink-0">
-              <TerminalPanel ref={terminalRef} sessionId={roomId} />
-            </div>
+        <div className="ide-topbar-spacer" />
+        <div className="ide-session-presence"><i /> <span>SHARED SESSION</span></div>
+        <div className="ide-topbar-actions">
+          {!DEMO_MODE && canRunOrInstall && activeFile && (
+            <button type="button" onClick={handleRunActiveFile} disabled={running} className="ide-run-button" title={`Run ${activeFile.path} with the ${workspaceConfig?.runtime ?? ""} runtime`}>
+              <Play size={13} fill="currentColor" />
+              <span>{running ? "Running" : "Run"}</span>
+            </button>
           )}
-        </div>
-
-        {!DEMO_MODE && (
-          <button
-            onClick={() => setTerminalOpen((v) => !v)}
-            className="text-xs text-faint hover:text-ink px-3 py-1 bg-panel border-t border-subtle"
-          >
-            {terminalOpen ? "Hide terminal" : "Show terminal"}
+          {!DEMO_MODE && canRunOrInstall && (
+            <button type="button" onClick={() => setInstallOpen(true)} className="ide-icon-button" title="Install packages">
+              <PackagePlus size={16} />
+            </button>
+          )}
+          <button type="button" onClick={() => setSettingsOpen(true)} className="ide-icon-button" title={DEMO_MODE ? "Workspace settings (demo mode)" : `Runtime: ${workspaceConfig?.runtime ?? "Settings"}`}>
+            <Settings2 size={16} />
           </button>
-        )}
+          {canManageRecording && <RecordingControls sessionId={roomId} />}
+          <button type="button" onClick={handleViewRecordings} className="ide-icon-button" title="View recordings">
+            <History size={16} />
+          </button>
+          <button type="button" onClick={() => setMembersOpen(true)} className="ide-members-button" title={role ? `Your role: ${role}` : "Session members"}>
+            <Users size={15} /><span>Members</span>
+          </button>
+          <NotificationBell />
+          <ThemeSwitcher />
+          <button type="button" onClick={() => window.dispatchEvent(new KeyboardEvent("keydown", { key: "k", ctrlKey: true }))} className="ide-icon-button ide-command-button" title="Command palette">
+            <Command size={16} />
+          </button>
+        </div>
+      </header>
+
+      <div className="ide-body">
+        <FileTree sessionId={roomId} />
+        <main className="ide-main-panel">
+          <div className="ide-editor-chrome">
+            <div className="ide-tabs-area"><EditorTabs /></div>
+            <div className="ide-editor-meta">
+              <span>{activeFile ? activeFile.path : "No file selected"}</span>
+              <span className="ide-editor-meta-separator">·</span>
+              <span>{activeFile?.language ?? "Plain text"}</span>
+            </div>
+          </div>
+
+          {DEMO_MODE && <DemoNotice />}
+
+          <div className="ide-editor-region">
+            <div className="ide-editor-stage">
+              <CollaborativeEditor roomId={roomId} />
+            </div>
+            {!DEMO_MODE && terminalOpen && (
+              <div className="ide-terminal-region">
+                <Suspense fallback={<div className="ide-terminal-loading">Loading terminal…</div>}><LazyTerminalPanel ref={terminalRef} sessionId={roomId} /></Suspense>
+              </div>
+            )}
+          </div>
+
+          <footer className="ide-statusbar">
+            <div className="ide-status-left">
+              <span className="ide-status-branch"><GitBranchIcon /> {roomId}</span>
+              <span className="ide-status-role">{role ?? "Joining"} ACCESS</span>
+            </div>
+            <div className="ide-status-right">
+              <span>{activeFile?.language ?? "Plain text"}</span>
+              {!DEMO_MODE && (
+                <button type="button" onClick={() => setTerminalOpen((v) => !v)} className={`ide-terminal-toggle ${terminalOpen ? "active" : ""}`}>
+                  <PanelBottom size={14} />
+                  <span>{terminalOpen ? "Hide terminal" : "Show terminal"}</span>
+                </button>
+              )}
+            </div>
+          </footer>
+        </main>
       </div>
 
       {membersOpen && (
@@ -264,4 +283,8 @@ export function Workspace({ roomId }: WorkspaceProps) {
       )}
     </div>
   );
+}
+
+function GitBranchIcon() {
+  return <span className="ide-branch-mark">⑂</span>;
 }

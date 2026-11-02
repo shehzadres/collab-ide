@@ -13,4 +13,5 @@ export interface CreateFilePayload {
   isFolder: boolean;
   parentId?: string | null;
   sessionId: string;
+  content?: string;
 }
