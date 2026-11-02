@@ -7,9 +7,12 @@ const MAX_CONTENT_BYTES = 2 * 1024 * 1024;
 export class FilesController {
   async create(req: Request, res: Response) {
     try {
-      const { name, path, isFolder, parentId, sessionId } = req.body;
+      const { name, path, isFolder, parentId, sessionId, content } = req.body;
       if (typeof name !== "string" || typeof path !== "string" || typeof sessionId !== "string") {
         return res.status(400).json({ message: "Invalid payload" });
+      }
+      if (typeof content === "string" && Buffer.byteLength(content, "utf8") > MAX_CONTENT_BYTES) {
+        return res.status(413).json({ message: "File content too large" });
       }
       const file = await filesService.create(req.user!.userId, {
         name,
@@ -17,6 +20,7 @@ export class FilesController {
         isFolder: Boolean(isFolder),
         parentId: typeof parentId === "string" ? parentId : null,
         sessionId,
+        content: typeof content === "string" ? content : undefined,
       });
       res.status(201).json({ file });
     } catch (err) {

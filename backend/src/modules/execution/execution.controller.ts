@@ -1,6 +1,7 @@
 import { Request, Response } from "express";
 import { workspaceService } from "./workspace.service";
-import { execInWorkspace, destroyWorkspaceContainer } from "./docker.runner";
+import { execInWorkspace, destroyWorkspaceContainer, syncWorkspaceFiles } from "./docker.runner";
+import { filesService } from "../files/files.service";
 import { isValidRuntimeId, getRuntime } from "./runtimes";
 import { logger } from "../../utils/logger";
 import { env } from "../../config/env";
@@ -108,6 +109,11 @@ export class ExecutionController {
 
     try {
       const config = await workspaceService.getOrCreate(sessionId);
+      const files = await filesService.getContents(sessionId);
+      if (!files.some((file) => file.path === filePath)) {
+        return res.status(404).json({ message: "File not found in this workspace" });
+      }
+      await syncWorkspaceFiles(sessionId, files);
       const runtimeDef = getRuntime(config.runtime);
       const command = runtimeDef.runCommand(filePath);
 
@@ -157,6 +163,8 @@ export class ExecutionController {
         });
       }
 
+      const files = await filesService.getContents(sessionId);
+      await syncWorkspaceFiles(sessionId, files);
       const runtimeDef = getRuntime(config.runtime);
       const command = runtimeDef.installCommand(packages);
 

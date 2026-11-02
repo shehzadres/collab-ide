@@ -49,10 +49,18 @@ function frameMutatesDocument(data: Buffer): boolean {
 function extractRoomId(req: IncomingMessage): string | null {
   const raw = req.url || "/default";
   const path = raw.split("?")[0];
-  const id = path.replace(/^\//, "");
-  if (!id || id.length > MAX_ROOM_ID_LENGTH || !/^[a-zA-Z0-9_-]+$/.test(id)) {
+  const roomPath = path.startsWith("/ws/") ? path.slice(4) : path.replace(/^\//, "");
+  const id = roomPath.split("/")[0];
+
+  if (
+    !id ||
+    roomPath.includes("/") ||
+    id.length > MAX_ROOM_ID_LENGTH ||
+    !/^[a-zA-Z0-9_-]+$/.test(id)
+  ) {
     return null;
   }
+
   return id;
 }
 

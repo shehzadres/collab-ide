@@ -4,6 +4,7 @@ export interface CreateFileDto {
   isFolder: boolean;
   parentId?: string | null;
   sessionId: string;
+  content?: string;
 }
 
 export interface UpdateFileDto {

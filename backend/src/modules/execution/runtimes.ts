@@ -1,5 +1,14 @@
 export type RuntimeId = "shell" | "node" | "python" | "go";
 
+function workspacePath(filePath: string): string {
+  let normalized = filePath.split(String.fromCharCode(92)).join("/");
+  while (normalized.startsWith("/")) normalized = normalized.slice(1);
+  if (!normalized || normalized.split("/").some((part) => !part || part === "." || part === "..")) {
+    throw new Error("Invalid workspace file path");
+  }
+  return `/workspace/${normalized}`;
+}
+
 export interface RuntimeDefinition {
   id: RuntimeId;
   label: string;
@@ -21,7 +30,7 @@ const RUNTIMES: Record<RuntimeId, RuntimeDefinition> = {
     label: "Shell",
     image: "collab-ide-executor-shell:latest",
     shellCmd: ["/bin/sh"],
-    runCommand: (path) => ["/bin/sh", path],
+    runCommand: (path) => ["/bin/sh", workspacePath(path)],
     installCommand: () => {
       throw new Error("The shell runtime has no package manager — use node or python instead.");
     },
@@ -32,7 +41,7 @@ const RUNTIMES: Record<RuntimeId, RuntimeDefinition> = {
     label: "Node.js",
     image: "collab-ide-executor-node:latest",
     shellCmd: ["/bin/sh"],
-    runCommand: (path) => ["node", path],
+    runCommand: (path) => ["node", workspacePath(path)],
     installCommand: (packages) => ["npm", "install", "--no-audit", "--no-fund", ...packages],
     fileExtensions: [".js", ".mjs", ".cjs"],
   },
@@ -41,7 +50,7 @@ const RUNTIMES: Record<RuntimeId, RuntimeDefinition> = {
     label: "Python",
     image: "collab-ide-executor-python:latest",
     shellCmd: ["/bin/sh"],
-    runCommand: (path) => ["python3", path],
+    runCommand: (path) => ["python3", workspacePath(path)],
     installCommand: (packages) => ["pip", "install", "--user", ...packages],
     fileExtensions: [".py"],
   },
@@ -50,7 +59,7 @@ const RUNTIMES: Record<RuntimeId, RuntimeDefinition> = {
     label: "Go",
     image: "collab-ide-executor-go:latest",
     shellCmd: ["/bin/sh"],
-    runCommand: (path) => ["go", "run", path],
+    runCommand: (path) => ["go", "run", workspacePath(path)],
     installCommand: (packages) => ["go", "get", ...packages],
     fileExtensions: [".go"],
   },
