@@ -10,6 +10,7 @@ export const PROJECT_TEMPLATES: ProjectTemplate[] = [
   },
   {
     id: "node-starter",
+    runtime: "node",
     label: "Node.js starter",
     description: "A minimal Node.js script and package.json.",
     language: "javascript",
@@ -26,6 +27,7 @@ export const PROJECT_TEMPLATES: ProjectTemplate[] = [
   },
   {
     id: "python-starter",
+    runtime: "python",
     label: "Python starter",
     description: "A minimal Python entry point.",
     language: "python",
@@ -38,6 +40,7 @@ export const PROJECT_TEMPLATES: ProjectTemplate[] = [
   },
   {
     id: "html-starter",
+    runtime: "node",
     label: "HTML/CSS/JS starter",
     description: "A static page with separate CSS and JS files.",
     language: "html",

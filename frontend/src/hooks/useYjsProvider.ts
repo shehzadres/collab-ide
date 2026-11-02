@@ -9,6 +9,7 @@ interface UseYjsProviderResult {
   doc: Y.Doc | null;
   provider: WebsocketProvider | null;
   connected: boolean;
+  synced: boolean;
 }
 
 export function useYjsProvider(roomId: string): UseYjsProviderResult {
@@ -16,6 +17,7 @@ export function useYjsProvider(roomId: string): UseYjsProviderResult {
   const [doc, setDoc] = useState<Y.Doc | null>(null);
   const [provider, setProvider] = useState<WebsocketProvider | null>(null);
   const [connected, setConnected] = useState(false);
+  const [synced, setSynced] = useState(false);
   const mountedRef = useRef(true);
 
   useEffect(() => {
@@ -25,6 +27,7 @@ export function useYjsProvider(roomId: string): UseYjsProviderResult {
       setDoc(null);
       setProvider(null);
       setConnected(false);
+      setSynced(false);
       return;
     }
 
@@ -34,22 +37,29 @@ export function useYjsProvider(roomId: string): UseYjsProviderResult {
     setDoc(d);
     setProvider(p);
     setConnected(p.wsconnected);
+    setSynced(p.synced === true);
 
     const onStatus = (e: { status: string }) => {
       if (mountedRef.current) setConnected(e.status === "connected");
     };
+    const onSync = (isSynced: boolean) => {
+      if (mountedRef.current) setSynced(isSynced);
+    };
     p.on("status", onStatus);
+    p.on("sync", onSync);
 
     return () => {
       mountedRef.current = false;
       p.off("status", onStatus);
+      p.off("sync", onSync);
       setProvider(null);
       setDoc(null);
       setConnected(false);
+      setSynced(false);
       releaseYProvider(roomId);
       releaseYDoc(roomId);
     };
   }, [roomId, accessToken]);
 
-  return { doc, provider, connected };
+  return { doc, provider, connected, synced };
 }

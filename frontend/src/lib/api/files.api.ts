@@ -12,6 +12,10 @@ export const filesApi = {
     return data.file;
   },
 
+  updateContent: async (id: string, content: string): Promise<void> => {
+    await apiClient.patch(`/files/${id}`, { content });
+  },
+
   rename: async (id: string, name: string): Promise<FileTreeNode> => {
     const { data } = await apiClient.patch<{ file: FileTreeNode }>(`/files/${id}`, { name });
     return data.file;

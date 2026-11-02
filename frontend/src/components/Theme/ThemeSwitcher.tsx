@@ -1,4 +1,5 @@
 import { useState, useRef, useEffect } from "react";
+import { Palette } from "lucide-react";
 import { THEME_LIST } from "../../lib/theme/themes";
 import { useTheme } from "../../hooks/useTheme";
 
@@ -24,12 +25,12 @@ export function ThemeSwitcher() {
         type="button"
         onClick={() => setOpen((v) => !v)}
         title="Change theme"
-        className="text-xs text-muted hover:text-ink px-2 py-1 rounded hover:bg-hover"
+        className="ide-icon-button"
       >
-        🎨
+        <Palette size={16} />
       </button>
       {open && (
-        <div className="absolute right-0 mt-1 w-40 bg-panel border border-border rounded-md shadow-popover z-50 py-1">
+        <div className="ide-theme-menu absolute right-0 mt-1 w-40 bg-panel border border-border rounded-md shadow-popover z-50 py-1">
           {THEME_LIST.map((t) => (
             <button
               key={t.id}

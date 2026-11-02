@@ -1,4 +1,5 @@
 import { useState, useRef, useEffect } from "react";
+import { Bell } from "lucide-react";
 import { useNotificationStore } from "../../store/notificationStore";
 
 function timeAgo(timestamp: number): string {
@@ -41,18 +42,18 @@ export function NotificationBell() {
         type="button"
         onClick={handleToggle}
         title="Notifications"
-        className="relative text-xs text-muted hover:text-ink px-2 py-1 rounded hover:bg-hover"
+        className="ide-icon-button relative"
       >
-        🔔
+        <Bell size={16} />
         {unreadCount > 0 && (
-          <span className="absolute -top-0.5 -right-0.5 w-3.5 h-3.5 rounded-full bg-danger text-white text-[9px] flex items-center justify-center">
+          <span className="ide-notification-count absolute -top-0.5 -right-0.5 w-3.5 h-3.5 rounded-full bg-danger text-white text-[9px] flex items-center justify-center">
             {unreadCount > 9 ? "9+" : unreadCount}
           </span>
         )}
       </button>
 
       {open && (
-        <div className="absolute right-0 mt-1 w-72 max-h-80 overflow-y-auto bg-panel border border-border rounded-md shadow-popover z-50">
+        <div className="ide-notification-menu absolute right-0 mt-1 w-72 max-h-80 overflow-y-auto bg-panel border border-border rounded-md shadow-popover z-50">
           <div className="flex items-center justify-between px-3 py-2 border-b border-subtle">
             <span className="text-xs font-semibold text-ink">Notifications</span>
             {notifications.length > 0 && (
