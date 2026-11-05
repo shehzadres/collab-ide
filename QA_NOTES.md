@@ -40,3 +40,11 @@ Repeated automated login attempts triggered the configured authentication rate l
 7. Create an invite link, redeem it as EDITOR and VIEWER, and verify role restrictions.
 8. Record a session, make edits, stop recording, and verify replay/seek.
 9. Check all four themes and the workspace at desktop and narrow viewport widths.
+
+
+## Monaco loader follow-up (2026-11-05)
+
+- Configured `@monaco-editor/react` to load the Monaco AMD loader from the locally installed `monaco-editor` package at `/node_modules/monaco-editor/min/vs`, avoiding reliance on the default CDN path.
+- Frontend production build passed after the change (`tsc -b && vite build`, 2,268 modules transformed).
+- Added and ran `artifacts/monaco-loader-smoke.cjs`: Monaco mounted successfully in Microsoft Edge (`.monaco-editor` present), with zero page errors and zero failed network requests.
+- Full workspace integration could not be re-run: the local PostgreSQL database configured in `backend/.env` is unavailable at `localhost:55432`; the Windows PostgreSQL service listens on `5432` but rejects the configured `collab_user` credentials. Redis at `localhost:6379` is also unavailable. Backend starts on port 4000 but repeatedly logs Redis connection errors. Do not mark collaboration, runtime execution, or other backend-dependent acceptance tests as passed until local services are restored.

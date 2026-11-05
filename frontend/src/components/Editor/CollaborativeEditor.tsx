@@ -1,4 +1,5 @@
 import { useRef, useEffect, lazy, Suspense } from "react";
+import { loader } from "@monaco-editor/react";
 import type { OnMount } from "@monaco-editor/react";
 import type * as monaco from "monaco-editor";
 import { Code2 } from "lucide-react";
@@ -195,3 +196,6 @@ export function CollaborativeEditor({ roomId }: CollaborativeEditorProps) {
     </div>
   );
 }
+
+// Serve Monaco's AMD loader from the installed package instead of relying on the default CDN.
+loader.config({ paths: { vs: "/node_modules/monaco-editor/min/vs" } });
