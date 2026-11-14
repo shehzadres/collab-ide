@@ -414,9 +414,9 @@ docker compose --env-file ../.env up -d   # starts postgres, redis, backend, fro
 docker compose --env-file ../.env exec backend npx prisma migrate deploy
 ```
 
-* Frontend served at `http://localhost:80`
-* Backend REST + WebSockets at `http://localhost:4000`
-* Postgres (`55432` on the host, mapped to container port `5432`) and Redis (`6379`) are also published to the host to support the native-backend local-dev workflow above — firewall the host's public interface in a real deployment if they shouldn't be reachable externally
+* Frontend served at `http://localhost:80` and reverse-proxies `/api`, `/ws`, and `/terminal` to the backend service. The same-origin proxy keeps refresh cookies and WebSocket connections working without exposing separate browser-facing backend ports.
+* Backend REST + WebSockets are published on `127.0.0.1:4000` for local diagnostics only.
+* PostgreSQL (`127.0.0.1:55432`) and Redis (`127.0.0.1:6379`) bind to loopback only; they are not exposed on the public network.
 
 ### Manual / cloud deployment
 

@@ -141,3 +141,15 @@ This section supersedes earlier notes in this file that reported local PostgreSQ
 ### Deployment readiness
 - Rewrote `DEMO_DEPLOYMENT.md` to use the correct Railway backend host, `/api` REST base, `/ws` Yjs base, and `/terminal` WebSocket path, plus a post-deployment acceptance checklist.
 - No new Neon, Upstash, or Railway resources were created. A fresh hosted database and Redis instance are required; do not claim hosted deployment readiness yet.
+
+
+## Local infrastructure hardening (2026-11-14)
+
+- Updated Docker Compose published ports for PostgreSQL, Redis, and backend to bind to `127.0.0.1` only.
+- Updated both Nginx configuration copies to serve the SPA and reverse-proxy `/api`, `/ws`, and `/terminal` to the backend, including WebSocket upgrade headers and long-lived connection timeouts.
+- Added gzip tuning and security headers (X-Frame-Options, X-Content-Type-Options, Referrer-Policy, Permissions-Policy), plus immutable caching and explicit static asset 404 handling.
+- Updated README local networking notes to describe same-origin proxying and loopback-only database/backend ports.
+- Rebuilt Docker Compose successfully. PostgreSQL and Redis reported healthy; backend reported healthy; frontend started successfully.
+- Verified frontend root, login, and registration routes return HTTP 200. Unauthenticated `/api/auth/me` through Nginx returns expected HTTP 401, proving the API proxy reaches the backend.
+- Verified both Yjs and terminal WebSocket upgrades through the Nginx reverse proxy using a test owner token. Secret values were not printed.
+- Local Docker single-replica stack is now using the hardened Nginx proxy path; no production hosting resources were provisioned.

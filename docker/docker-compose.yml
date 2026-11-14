@@ -7,7 +7,7 @@ services:
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?must set POSTGRES_PASSWORD}
       POSTGRES_DB: ${POSTGRES_DB:-collab_ide}
     ports:
-      - "55432:5432"
+      - "127.0.0.1:55432:5432"
     volumes:
       - pgdata:/var/lib/postgresql/data
     healthcheck:
@@ -23,7 +23,7 @@ services:
     restart: unless-stopped
     command: ["redis-server", "--save", "", "--appendonly", "no"]
     ports:
-      - "6379:6379"
+      - "127.0.0.1:6379:6379"
     # Yjs sync and recording-state are pub/sub + ephemeral-key only (see
     # backend/src/modules/yjs-server/redis.sync.ts and sessions.service.ts) —
     # nothing here needs to survive a Redis restart, so persistence is
@@ -76,7 +76,7 @@ services:
       MAX_TERMINAL_SESSIONS: 50
       TERMINAL_IDLE_TIMEOUT_MS: 600000
     ports:
-      - "4000:4000"
+      - "127.0.0.1:4000:4000"
     # Docker Desktop exposes the socket as root:root (0660). Set DOCKER_GID
     # to the socket's group ID on Linux hosts (often the docker group GID).
     group_add:
