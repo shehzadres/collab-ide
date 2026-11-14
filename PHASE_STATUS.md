@@ -1,6 +1,6 @@
 # Collab IDE Completion Plan
 
-Last verified: 2026-11-14 10:52 UTC
+Last verified: 2026-11-14 (post-deployment health and connectivity verification)
 Repository: `shehzadres/collab-ide`
 Local path: `C:\Users\Dell\Documents\collab-ide`
 Main code commit: `c59d584`
@@ -53,18 +53,21 @@ Main code commit: `c59d584`
 
 ## Phase 5: Deployment and presentation
 
-**Status: FRONTEND DEPLOYED; PRODUCTION BACKEND BLOCKED**
+**Status: FRONTEND AND BACKEND DEPLOYED; HOSTED FUNCTIONAL ACCEPTANCE PARTIAL**
 
-- Vercel frontend project `collab-ide-frontend` is linked to `shehzadres/collab-ide`.
-- Latest production deployment for `c59d584` is READY and owns `https://collab-ide-frontend-iota.vercel.app`.
-- Root, SPA deep routes, Monaco loader, workspace chunk, and Monaco worker assets return HTTP 200.
-- Vercel production variables point the frontend API to `https://collab-ide-backend-production.up.railway.app/api`, Yjs to the matching `wss://.../ws` host, and terminal to `wss://.../terminal`.
-- `VITE_DEMO_MODE=true` is intentional for the hosted demo: Docker-dependent execution/terminal controls are hidden.
-- The configured Railway backend host returns Railway's generic 404 / service-not-found response. The connected Railway workspace contains only unrelated projects and no Collab IDE backend service.
-- Hosted authentication, invitations, collaboration, replay, and role revocation are therefore NOT verified. No resources were created in the unrelated Railway workspace.
+- Vercel frontend project `collab-ide-frontend` is linked to `shehzadres/collab-ide` and serves `https://collab-ide-frontend-iota.vercel.app`.
+- The Railway backend service `collab-ide-backend` is deployed in the connected project. The latest observed deployment completed successfully on commit `fda49aed`, with one running replica.
+- The backend health endpoint returned HTTP 200.
+- CORS preflight from the deployed frontend origin returned HTTP 204 with credentials enabled.
+- Unauthenticated `/api/auth/me` returned the expected HTTP 401; unauthenticated Yjs WebSocket upgrade returned the expected HTTP 401.
+- `VITE_DEMO_MODE=true` is intentional for the hosted demo. Docker-dependent terminal, Run, Install, and workspace container controls are hidden/disabled; the hosted terminal probe returned HTTP 503 as expected.
+- Local runtime smoke, collaboration/authorization suite, two-context Yjs editing and persistence, recording/replay, and two-backend-process Redis synchronization/revocation tests passed. These local results are not a substitute for production browser acceptance.
+- Fresh production registration, invitation redemption, and independent two-browser live editing were not completed in the latest hosted verification pass and remain unclaimed.
 
-## Remaining blocker
+## Remaining production acceptance
 
-Connect the Railway account/workspace that owns the Collab IDE backend, or restore the backend service/domain. Then verify database, Redis, JWT secrets, CORS, and public WebSocket paths; deploy the backend; and run hosted authentication, collaboration, replay, and role-revocation smoke tests.
+- Run a fresh authenticated production browser flow for registration/login, workspace creation, invite redemption, and two-browser live editing/persistence.
+- Confirm recording/replay behavior against the deployed backend.
+- Keep Docker execution explicitly documented as unavailable in hosted demo mode unless the backend is moved to a Docker-capable host and both demo-mode settings are changed deliberately.
 
 Local environment files and the pre-cleanup Git bundle remain private. Never commit or upload them.
