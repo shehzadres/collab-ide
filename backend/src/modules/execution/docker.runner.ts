@@ -117,12 +117,16 @@ export async function createOrAttachTerminalSession(opts: CreateOrAttachOptions)
   try {
     const docker = getDocker();
     const containerName = containerNameForSession(opts.sessionId);
+    // dockerode expects attach query parameters at the top level. Nesting them
+    // under `_query` omits `stream=1`, causing the attach request to wait for
+    // the long-running shell to exit instead of returning its live stream.
     const attachOptions = {
-      _query: { stream: true, stdin: true, stdout: true, stderr: true },
-      _body: {},
-      hijack: true,
+      stream: true,
       stdin: true,
-    } as any;
+      stdout: true,
+      stderr: true,
+      hijack: true,
+    };
 
     const existing = await findContainerByName(containerName);
     if (existing) {
@@ -207,7 +211,9 @@ export async function createOrAttachTerminalSession(opts: CreateOrAttachOptions)
 
     try {
       await container.start();
+      logger.info(`Started terminal container ${containerName}; attaching stream`);
       const stream = await container.attach(attachOptions);
+      logger.info(`Attached terminal stream ${containerName}`);
       await workspaceService.setContainerName(opts.sessionId, containerName);
       await incrementActiveSessions();
       logger.info(`Created persistent workspace container for session ${opts.sessionId} (runtime=${opts.runtime})`);
@@ -240,11 +246,104 @@ async function findContainerByName(name: string): Promise<Docker.Container | nul
   }
 }
 
+/**
+ * Ensures a persistent workspace container exists without opening a terminal
+ * attachment or incrementing the active-terminal counter. HTTP Run/Install
+ * actions use this path so they work even when the terminal panel was never
+ * opened.
+ */
+export async function ensureWorkspaceContainer(opts: CreateOrAttachOptions): Promise<void> {
+  const releaseLock = await acquireTerminalSessionLock(opts.sessionId);
+
+  try {
+    const docker = getDocker();
+    const containerName = containerNameForSession(opts.sessionId);
+    const existing = await findContainerByName(containerName);
+
+    if (existing) {
+      const info = await existing.inspect();
+      if (info.State.Running) {
+        await workspaceService.setContainerName(opts.sessionId, containerName);
+        await workspaceService.touchLastActive(opts.sessionId);
+        return;
+      }
+
+      try {
+        await existing.start();
+        await workspaceService.setContainerName(opts.sessionId, containerName);
+        await workspaceService.touchLastActive(opts.sessionId);
+        return;
+      } catch (err) {
+        logger.warn(`Failed to restart workspace container for session ${opts.sessionId}, recreating`, err);
+        await existing.remove({ force: true }).catch(() => {});
+      }
+    }
+
+    const runtimeDef = getRuntime(opts.runtime);
+    const createOptions: Docker.ContainerCreateOptions = {
+      Image: runtimeDef.image,
+      name: containerName,
+      Tty: true,
+      OpenStdin: true,
+      StdinOnce: false,
+      Cmd: runtimeDef.shellCmd,
+      HostConfig: {
+        Memory: 256 * 1024 * 1024,
+        MemorySwap: 256 * 1024 * 1024,
+        NanoCpus: 500_000_000,
+        NetworkMode: opts.networkEnabled ? "bridge" : "none",
+        AutoRemove: false,
+        ReadonlyRootfs: false,
+        PidsLimit: 128,
+        CapDrop: ["ALL"],
+        SecurityOpt: ["no-new-privileges"],
+      },
+    };
+
+    let container: Docker.Container;
+    try {
+      container = await docker.createContainer(createOptions);
+    } catch (err) {
+      const statusCode = typeof err === "object" && err !== null && "statusCode" in err
+        ? Number((err as { statusCode: unknown }).statusCode)
+        : 0;
+
+      if (statusCode !== 409) throw err;
+
+      const racedContainer = await findContainerByName(containerName);
+      if (!racedContainer) throw err;
+
+      for (let attempt = 0; attempt < 5; attempt += 1) {
+        const state = await racedContainer.inspect();
+        if (state.State.Running) {
+          await workspaceService.setContainerName(opts.sessionId, containerName);
+          await workspaceService.touchLastActive(opts.sessionId);
+          return;
+        }
+        await new Promise((resolve) => setTimeout(resolve, 100));
+      }
+
+      throw new Error(`Workspace container ${containerName} was created but did not start`);
+    }
+
+    try {
+      await container.start();
+      await workspaceService.setContainerName(opts.sessionId, containerName);
+      await workspaceService.touchLastActive(opts.sessionId);
+      logger.info(`Ensured workspace container for session ${opts.sessionId} (runtime=${opts.runtime})`);
+    } catch (err) {
+      await container.remove({ force: true }).catch(() => {});
+      throw err;
+    }
+  } finally {
+    releaseLock();
+  }
+}
+
 export async function syncWorkspaceFiles(
   sessionId: string,
   files: Array<{ path: string; content: string }>
 ): Promise<void> {
-  if (files.length === 0) return;
   if (files.length > 500) throw new Error("Workspace contains too many files to sync at once");
 
   const entries = files.map((file) => {
@@ -262,9 +361,17 @@ export async function syncWorkspaceFiles(
     throw new Error("Workspace files exceed the 20 MB execution sync limit");
   }
 
+  const config = await workspaceService.getOrCreate(sessionId);
+  await ensureWorkspaceContainer({
+    sessionId,
+    runtime: config.runtime,
+    networkEnabled: config.networkEnabled,
+  });
+  if (entries.length === 0) return;
+
   const containerName = containerNameForSession(sessionId);
   const container = await findContainerByName(containerName);
-  if (!container) throw new Error("No active workspace container for this session. Open the terminal first.");
+  if (!container) throw new Error("No active workspace container for this session.");
 
   const info = await container.inspect();
   if (!info.State.Running) throw new Error("Workspace container is not running.");
@@ -334,7 +441,7 @@ export async function execInWorkspace(
   const containerName = containerNameForSession(sessionId);
   const container = await findContainerByName(containerName);
   if (!container) {
-    throw new Error("No active workspace container for this session — open the terminal first.");
+    throw new Error("No active workspace container for this session.");
   }
 
   const info = await container.inspect();

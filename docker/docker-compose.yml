@@ -1,5 +1,3 @@
-version: "3.9"
-
 services:
   postgres:
     image: postgres:16-alpine
@@ -8,6 +6,8 @@ services:
       POSTGRES_USER: ${POSTGRES_USER:-user}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?must set POSTGRES_PASSWORD}
       POSTGRES_DB: ${POSTGRES_DB:-collab_ide}
+    ports:
+      - "55432:5432"
     volumes:
       - pgdata:/var/lib/postgresql/data
     healthcheck:
@@ -22,6 +22,8 @@ services:
     image: redis:7-alpine
     restart: unless-stopped
     command: ["redis-server", "--save", "", "--appendonly", "no"]
+    ports:
+      - "6379:6379"
     # Yjs sync and recording-state are pub/sub + ephemeral-key only (see
     # backend/src/modules/yjs-server/redis.sync.ts and sessions.service.ts) —
     # nothing here needs to survive a Redis restart, so persistence is
@@ -34,14 +36,31 @@ services:
     networks:
       - internal
 
+  migrate:
+    build:
+      context: ../backend
+      dockerfile: Dockerfile
+      target: builder
+    image: collab-ide-migrator:latest
+    restart: "no"
+    command: ["npx", "prisma", "migrate", "deploy"]
+    environment:
+      NODE_ENV: production
+      DATABASE_URL: postgresql://${POSTGRES_USER:-user}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB:-collab_ide}
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - internal
+
   backend:
     build:
       context: ../backend
       dockerfile: Dockerfile
     restart: unless-stopped
     depends_on:
-      postgres:
-        condition: service_healthy
+      migrate:
+        condition: service_completed_successfully
       redis:
         condition: service_healthy
     environment:
@@ -58,6 +77,10 @@ services:
       TERMINAL_IDLE_TIMEOUT_MS: 600000
     ports:
       - "4000:4000"
+    # Docker Desktop exposes the socket as root:root (0660). Set DOCKER_GID
+    # to the socket's group ID on Linux hosts (often the docker group GID).
+    group_add:
+      - "${DOCKER_GID:-0}"
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
     healthcheck:

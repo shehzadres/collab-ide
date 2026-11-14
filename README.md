@@ -262,12 +262,13 @@ collab-ide/
 ### Root `.env` (compose only)
 
 ```env
-POSTGRES_USER=collab_ide_user
-POSTGRES_PASSWORD=           # required — no default
+POSTGRES_USER=user
+POSTGRES_PASSWORD=***REDACTED***
 POSTGRES_DB=collab_ide
-JWT_ACCESS_SECRET=           # required — generate: node -e "console.log(require('crypto').randomBytes(48).toString('hex'))"
-JWT_REFRESH_SECRET=          # required — must differ from ACCESS_SECRET
-CLIENT_URL=                  # required — e.g. http://localhost or https://your-domain.com
+DOCKER_GID=0                 # Docker socket group ID (0 on Docker Desktop; set the docker group GID on Linux)
+JWT_ACCESS_SECRET=***REDACTED***
+JWT_REFRESH_SECRET=***REDACTED***
+CLIENT_URL=http://localhost:5173
 ```
 
 ### `backend/.env`
@@ -290,9 +291,9 @@ CLIENT_URL=                  # required — e.g. http://localhost or https://you
 
 |Variable|Default (dev)|Description|
 |-|-|-|
-|`VITE _API _URL`|`/api`|Relative — proxied same-origin to the backend by Vite's dev server (see `vite.config.ts`)|
-|`VITE _YJS _WS _URL`|`ws://localhost:5173`|Also same-origin; Vite proxies `/ws` through to the backend|
-|`VITE _TERMINAL _WS _URL`|`ws://localhost:5173/terminal`|Also same-origin; Vite proxies `/terminal` through to the backend|
+|`VITE_API_URL`|`/api`|Relative — proxied same-origin to the backend by Vite's dev server (see `vite.config.ts`)|
+|`VITE_YJS_WS_URL`|`ws://localhost:5173`|Also same-origin; Vite proxies `/ws` through to the backend|
+|`VITE_TERMINAL_WS_URL`|`ws://localhost:5173/terminal`|Also same-origin; Vite proxies `/terminal` through to the backend|
 
 >  * *Important: * * these defaults are same-origin (port `5173`, the Vite dev server)  *on purpose *, not a mistake — the backend's refresh-token cookie is `SameSite=Lax`, which browsers won't attach to a direct cross-origin POST from `5173` to `4000`. Vite's dev proxy makes every request same-origin so the cookie actually gets sent. Don't point these at `http://localhost:4000` directly unless you've also changed the cookie's `SameSite` policy. For a real production deployment (no dev proxy), point these at your actual backend origin — see `frontend/.env.example` for the commented-out production block.
 
@@ -314,7 +315,7 @@ cp frontend/.env.example frontend/.env
 Edit `backend/.env` — set at minimum:
 
 ```env
-DATABASE_URL=postgresql://postgres:postgres@localhost:5432/collab_ide
+DATABASE_URL=***REDACTED***
 REDIS_URL=redis://localhost:6379
 JWT_ACCESS_SECRET=<generate with command below>
 JWT_REFRESH_SECRET=<generate with command below — must differ>
@@ -371,6 +372,26 @@ Open `http://localhost:5173`.
 
 \---
 
+## Verification
+
+Run the static checks from the repository root:
+
+```bash
+npm ci
+npm ci --prefix backend
+npm ci --prefix frontend
+npm test
+npm run typecheck
+npm run build
+```
+
+For a full local integration check, start the Docker Compose stack first, then run:
+
+```bash
+npm run smoke:local
+```
+
+The smoke test creates and removes a temporary account and workspace. It verifies registration and authenticated profile access, then runs Shell, Node.js, Python, and Go files without opening the terminal first. It also checks the authenticated interactive terminal WebSocket, workspace resets, logout, and cleanup. Docker, PostgreSQL, Redis, and all four executor images must be available.
 ## Production deployment
 
 ### Docker Compose (single server)
@@ -387,7 +408,7 @@ docker compose --env-file ../.env exec backend npx prisma migrate deploy
 
 * Frontend served at `http://localhost:80`
 * Backend REST + WebSockets at `http://localhost:4000`
-* Postgres (`5432`) and Redis (`6379`) are also published to the host to support the native-backend local-dev workflow above — firewall the host's public interface in a real deployment if they shouldn't be reachable externally
+* Postgres (`55432` on the host, mapped to container port `5432`) and Redis (`6379`) are also published to the host to support the native-backend local-dev workflow above — firewall the host's public interface in a real deployment if they shouldn't be reachable externally
 
 ### Manual / cloud deployment
 
@@ -482,7 +503,7 @@ Containers are named `ws-<sessionId>` and survive client disconnects. Reconnecti
 * **RBAC is per-session only:** There's no global admin dashboard, no cross-session user management, no team/org concept above the session level.
 * **Single-file Run:** The Run button executes one file in isolation. It doesn't understand project structure (e.g. `npm run start` for a multi-file Node project). Use the interactive terminal for that.
 * **Replay does not include file create/rename events:** The file tree state at recording start is preserved, but file-system mutations during a recording are not replayed — only text content mutations via Yjs.
-* **`npm audit` on `frontend/`:** flags a moderate advisory in `esbuild` (via Vite's dev-server-only transitive dependency — [GHSA-67mh-4wv8-2f99](https://github.com/advisories/GHSA-67mh-4wv8-2f99)). It only affects `vite dev`, not production builds (`vite build` output is unaffected), and the fix requires an untested breaking major upgrade to Vite 8. Left as-is deliberately rather than force-upgrading without validating the rest of the toolchain against it — revisit before treating this as stale.
+
 
 \---
 

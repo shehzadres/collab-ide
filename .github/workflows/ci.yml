@@ -1,0 +1,108 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  verify:
+    name: Install, typecheck, and build
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+          cache-dependency-path: |
+            package-lock.json
+            backend/package-lock.json
+            frontend/package-lock.json
+
+      - name: Install root dependencies
+        run: npm ci
+
+      - name: Install backend dependencies
+        run: npm ci
+        working-directory: backend
+
+      - name: Install frontend dependencies
+        run: npm ci
+        working-directory: frontend
+
+      - name: Audit backend dependencies
+        run: npm audit --audit-level=high
+        working-directory: backend
+
+      - name: Audit frontend dependencies
+        run: npm audit --audit-level=high
+        working-directory: frontend
+
+      - name: Run backend unit tests
+        run: npm test
+
+      - name: Typecheck backend and frontend
+        run: npm run typecheck
+
+      - name: Build backend and frontend
+        run: npm run build
+
+      - name: Prepare Docker integration environment
+        run: |
+          cat > .env <<EOF
+          POSTGRES_USER=user
+          POSTGRES_PASSWORD=ci-password
+          POSTGRES_DB=collab_ide
+          DOCKER_GID=$(stat -c '%g' /var/run/docker.sock)
+          JWT_ACCESS_SECRET=ci-access-secret-with-more-than-32-characters-000000
+          JWT_REFRESH_SECRET=ci-refresh-secret-with-more-than-32-characters-111111
+          CLIENT_URL=http://localhost:5173
+          EOF
+          cat > backend/.env <<EOF
+          NODE_ENV=test
+          PORT=4000
+          DATABASE_URL=postgresql://user:ci-password@localhost:55432/collab_ide?schema=public
+          REDIS_URL=redis://localhost:6379
+          JWT_ACCESS_SECRET=ci-access-secret-with-more-than-32-characters-000000
+          JWT_REFRESH_SECRET=ci-refresh-secret-with-more-than-32-characters-111111
+          CLIENT_URL=http://localhost:5173
+          MAX_TERMINAL_SESSIONS=50
+          TERMINAL_IDLE_TIMEOUT_MS=600000
+          DEMO_MODE=false
+          EOF
+
+      - name: Start full Docker Compose stack
+        run: docker compose --env-file .env -f docker/docker-compose.yml up -d --build
+
+      - name: Wait for backend health
+        run: |
+          for attempt in {1..60}; do
+            if curl --fail --silent http://localhost:4000/health >/dev/null; then
+              exit 0
+            fi
+            sleep 2
+          done
+          docker compose --env-file .env -f docker/docker-compose.yml logs backend postgres redis
+          exit 1
+
+      - name: Run full local integration smoke test
+        run: npm run smoke:local
+
+      - name: Stop Docker Compose stack
+        if: always()
+        run: docker compose --env-file .env -f docker/docker-compose.yml down -v

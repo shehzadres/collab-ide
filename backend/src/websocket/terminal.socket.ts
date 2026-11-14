@@ -50,6 +50,7 @@ export function attachTerminalSocket(httpServer: HttpServer, path = "/terminal")
   });
 
   wss.on("connection", async (ws: WebSocket, req: IncomingMessage) => {
+    logger.info("Terminal WebSocket connection accepted");
     const url = new URL(req.url || "", "http://localhost");
     const sessionId = url.searchParams.get("sessionId");
 
@@ -82,11 +83,13 @@ export function attachTerminalSocket(httpServer: HttpServer, path = "/terminal")
 
     try {
       const config = await workspaceService.getOrCreate(sessionId);
+      logger.info(`Terminal container attach starting for session ${sessionId}`);
       running = await createOrAttachTerminalSession({
         sessionId,
         runtime: config.runtime,
         networkEnabled: config.networkEnabled,
       });
+      logger.info(`Terminal container attached for session ${sessionId}`);
       await workspaceService.touchLastActive(sessionId);
     } catch (err) {
       logger.error("Failed to start or attach terminal container", err);
@@ -164,6 +167,15 @@ export function attachTerminalSocket(httpServer: HttpServer, path = "/terminal")
     ws.on("error", (err) => {
       logger.warn(`Terminal WS error for session ${sessionId}`, err);
     });
+
+    // Signal readiness only after the container stream and client message
+    // handler are both attached, so the first keystroke cannot be lost.
+    if (ws.readyState === WebSocket.OPEN) {
+      logger.info(`Terminal ready for session ${sessionId}`);
+      ws.send(JSON.stringify({ type: "ready", resumed: activeSession.resumed }));
+    } else {
+      logger.warn(`Terminal socket closed before ready for session ${sessionId} (state=${ws.readyState})`);
+    }
   });
 
   logger.info(`Terminal WebSocket server attached at ${path}`);

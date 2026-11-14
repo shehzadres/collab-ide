@@ -7,6 +7,8 @@ const WS_URL = import.meta.env.VITE_TERMINAL_WS_URL || `${location.protocol === 
 export function useTerminalSocket(sessionId: string, onOutput: (data: string) => void) {
   const accessToken = useAuthStore((s) => s.accessToken);
   const wsRef = useRef<WebSocket | null>(null);
+  const readyRef = useRef(false);
+  const pendingInputRef = useRef<string[]>([]);
   const [connected, setConnected] = useState(false);
   const onOutputRef = useRef(onOutput);
   onOutputRef.current = onOutput;
@@ -16,17 +18,37 @@ export function useTerminalSocket(sessionId: string, onOutput: (data: string) =>
 
     const ws = new WebSocket(`${WS_URL}?sessionId=${encodeURIComponent(sessionId)}&token=${encodeURIComponent(accessToken)}`);
     wsRef.current = ws;
+    readyRef.current = false;
+    pendingInputRef.current = [];
+    setConnected(false);
 
-    ws.onopen = () => setConnected(true);
-    ws.onclose = () => setConnected(false);
+    // The TCP/WebSocket handshake completes before the backend has attached
+    // the Docker stream. Wait for its explicit ready frame before accepting
+    // terminal input, otherwise the first keystrokes can be dropped.
+    ws.onopen = () => setConnected(false);
+    ws.onclose = () => {
+      readyRef.current = false;
+      pendingInputRef.current = [];
+      setConnected(false);
+    };
     ws.onerror = () => setConnected(false);
 
     ws.onmessage = (event) => {
       try {
         const msg: TerminalServerMessage = JSON.parse(event.data);
-        if (msg.type === "output") {
+        if (msg.type === "ready") {
+          readyRef.current = true;
+          setConnected(true);
+          for (const data of pendingInputRef.current) {
+            if (ws.readyState !== WebSocket.OPEN) break;
+            ws.send(JSON.stringify({ type: "input", data }));
+          }
+          pendingInputRef.current = [];
+        } else if (msg.type === "output") {
           onOutputRef.current(msg.data);
         } else if (msg.type === "exit") {
+          readyRef.current = false;
+          setConnected(false);
           onOutputRef.current(`\r\n[process exited with code ${msg.code}]\r\n`);
         }
       } catch {
@@ -35,6 +57,8 @@ export function useTerminalSocket(sessionId: string, onOutput: (data: string) =>
     };
 
     return () => {
+      readyRef.current = false;
+      pendingInputRef.current = [];
       ws.onopen = null;
       ws.onmessage = null;
       ws.onerror = null;
@@ -47,13 +71,21 @@ export function useTerminalSocket(sessionId: string, onOutput: (data: string) =>
   }, [sessionId, accessToken]);
 
   const sendInput = useCallback((data: string) => {
-    if (wsRef.current?.readyState === WebSocket.OPEN) {
-      wsRef.current.send(JSON.stringify({ type: "input", data }));
+    const ws = wsRef.current;
+    if (!ws) return;
+
+    if (ws.readyState === WebSocket.OPEN && readyRef.current) {
+      ws.send(JSON.stringify({ type: "input", data }));
+    } else if (ws.readyState === WebSocket.OPEN || ws.readyState === WebSocket.CONNECTING) {
+      const queuedBytes = pendingInputRef.current.reduce((total, item) => total + item.length, 0);
+      if (queuedBytes + data.length <= 64 * 1024) {
+        pendingInputRef.current.push(data);
+      }
     }
   }, []);
 
   const sendResize = useCallback((cols: number, rows: number) => {
-    if (wsRef.current?.readyState === WebSocket.OPEN) {
+    if (wsRef.current?.readyState === WebSocket.OPEN && readyRef.current) {
       wsRef.current.send(JSON.stringify({ type: "resize", cols, rows }));
     }
   }, []);

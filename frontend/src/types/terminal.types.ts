@@ -8,4 +8,12 @@ export interface TerminalExitMessage {
   code: number;
 }
 
-export type TerminalServerMessage = TerminalOutputMessage | TerminalExitMessage;
+export interface TerminalReadyMessage {
+  type: "ready";
+  resumed: boolean;
+}
+
+export type TerminalServerMessage =
+  | TerminalOutputMessage
+  | TerminalExitMessage
+  | TerminalReadyMessage;
