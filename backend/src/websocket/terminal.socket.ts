@@ -13,6 +13,7 @@ import { sessionsService } from "../modules/sessions/sessions.service";
 import { verifyAccessToken } from "../utils/jwt";
 import { logger } from "../utils/logger";
 import { env } from "../config/env";
+import { permissionsService } from "../modules/permissions/permissions.service";
 
 const sessions = new Map<WebSocket, RunningSession>();
 const MAX_INPUT_BYTES = 64 * 1024;
@@ -60,6 +61,17 @@ export function attachTerminalSocket(httpServer: HttpServer, path = "/terminal")
       return;
     }
 
+    try {
+      const token = url.searchParams.get("token") || "";
+      const payload = verifyAccessToken(token);
+      await permissionsService.ensureMembership(sessionId, payload.userId, "VIEWER");
+      await permissionsService.requireRole(sessionId, payload.userId, "EDITOR");
+    } catch (error) {
+      logger.warn("Terminal access denied for session " + sessionId, error);
+      ws.send(JSON.stringify({ type: "exit", code: 1, message: "Editor access is required to use the terminal" }));
+      ws.close(1008, "insufficient session role");
+      return;
+    }
     let closed = false;
     let running: RunningSession | null = null;
     let idleTimer: NodeJS.Timeout | null = null;
