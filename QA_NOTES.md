@@ -166,10 +166,21 @@ This section supersedes earlier notes in this file that reported local PostgreSQ
 
 - Production-style Docker/Nginx browser acceptance passed account registration, session creation, Node starter file, Monaco editor and worker startup, Yjs sync, terminal connection, and mobile layout. The run reported zero browser page errors and zero failed requests.
 - The Monaco AMD worker bootstrap now uses an absolute same-origin worker URL. Production Vercel assets include the loader, workspace chunk, and workerMain asset; all returned HTTP 200.
-- Local backend unit tests (4), local integration smoke, and all 16 collaboration/authorization checks passed after the Nginx and loopback-only port changes.
-- Local frontend/backend builds and typechecks passed. Production dependency audits found zero vulnerabilities. Initial JavaScript is about 79 KB (30 KB gzip); Monaco remains a deferred 2.30 MB chunk (598 KB gzip).
+- Local backend unit tests (4), local integration smoke, collaboration/authorization checks, and recording/replay regression checks passed after the Nginx and loopback-only port changes.
+- Local frontend/backend builds and typechecks passed. Production dependency audits found zero vulnerabilities. Production Vercel assets: entry about 79 KB, React vendor about 181 KB, workspace page about 40.5 KB, and Monaco about 2.30 MB (deferred). Sizes are raw asset sizes.
 - Temporary QA accounts (5), their 4 sessions, and the `ws-prod-smoke-*` Docker containers were cleaned up.
 - GitHub Actions on `3dde13a` failed in `smoke:local`; the CI workflow now pins service/test URLs to `127.0.0.1` to match loopback-only Docker port bindings. The retest for `3bd0e8e` passed all steps, including both local runtime smoke and multi-user collaboration/authorization tests.
-- Vercel frontend deployment `3dde13a` is READY and the public SPA/Monaco assets return HTTP 200. The hosted demo intentionally sets `VITE_DEMO_MODE=true`, so Docker-dependent execution is hidden.
+- Vercel frontend deployment for `c59d584` is READY and the public SPA/Monaco assets return HTTP 200. The hosted demo intentionally sets `VITE_DEMO_MODE=true`, so Docker-dependent execution is hidden.
 - Hosted backend remains blocked: the configured Railway backend domain returns Railway's generic 404, and the connected Railway account has no Collab IDE project. Hosted auth/collaboration are not verified. The correct Railway workspace must be connected before backend recovery or redeployment.
-- Still open: true two-browser UX acceptance, persistence/replay acceptance, and WebSocket revocation with two live backend replicas.
+- The two-browser UX, file persistence/replay, and WebSocket revocation across two live backend replicas were subsequently completed successfully; only the production backend deployment remains blocked.
+
+## Final verification checkpoint (2026-11-14 10:52 UTC)
+
+- Replay pipeline defect fixed in `c59d584`: snapshots are captured immediately, and actual Yjs document `updateV2` payloads are recorded instead of raw WebSocket protocol frames.
+- Browser recording/replay test passed: a recorded editor change was reconstructed and displayed in the replay editor. The backend collaboration smoke test now includes a regression assertion for snapshot + update replay.
+- Two independent browser contexts passed owner/editor invitation, live edit synchronization, and file persistence after reload.
+- A separate two-backend-container test passed cross-replica Yjs synchronization through Redis, terminal and Yjs socket revocation after demotion, viewer reconnect, and continued read-only synchronization.
+- Local runtime smoke passed all four runtimes and terminal checks. Four backend unit tests pass. Backend typecheck/build pass. Frontend build passed. Production dependency audits found zero vulnerabilities.
+- GitHub Actions run `43587070241` for `c59d584` completed successfully, including audits, builds, Docker startup/health, runtime smoke, collaboration, and replay regression tests.
+- Vercel production deployment for `c59d584` is READY. The public root, SPA deep route, Monaco loader, and Monaco worker assets return HTTP 200.
+- Hosted backend remains blocked: `collab-ide-backend-production.up.railway.app` returns Railway's generic 404, and the connected Railway workspace has no Collab IDE backend service. Do not create resources in that unrelated workspace. Connect the correct Railway account/workspace to complete Phase 5.
