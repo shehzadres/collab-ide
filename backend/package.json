@@ -32,7 +32,7 @@
     "tar-stream": "^2.2.0",
     "ws": "^8.18.0",
     "y-protocols": "^1.0.7",
-    "y-websocket": "^2.0.4",
+    "y-websocket": "^3.1.0",
     "yjs": "^13.6.18"
   },
   "devDependencies": {
