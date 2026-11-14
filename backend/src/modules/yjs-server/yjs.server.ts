@@ -26,6 +26,7 @@ onMembershipChanged((sessionId, userId) => {
   }
 });
 const MAX_ROOM_ID_LENGTH = 128;
+const recordingListeners = new WeakSet<Y.Doc>();
 
 // Outer envelope type, per y-websocket's bin/utils.cjs (not exported, so
 // mirrored here as the same stable values: 0 = sync sub-protocol message,
@@ -193,20 +194,19 @@ export function createYjsServer(): WebSocketServer {
       // this when the room is newly registered in this process, not on
       // every connection to an already-active room.
       attachRedisSync(roomId, doc);
+      if (!recordingListeners.has(doc)) {
+        recordingListeners.add(doc);
+        doc.on("updateV2", (update: Uint8Array) => {
+          if (sessionsService.isRecording(roomId)) {
+            sessionsService.recordEvent(roomId, "YJS_UPDATE", Buffer.from(update));
+          }
+        });
+      }
       // If this room is already being recorded (started via another
       // replica, or before this connection joined) and this is the first
-      // local doc registration for it, start snapshotting here too — see
-      // yjs.snapshot.ts for why this can't rely solely on the replica that
-      // received the original /start call.
+      // local doc registration for it, start snapshotting here too.
       ensureSnapshottingIfRecording(roomId);
     }
-
-    const onMessage = (data: Buffer, isBinary: boolean) => {
-      if (isBinary && !isReadOnly && sessionsService.isRecording(roomId)) {
-        sessionsService.recordEvent(roomId, "YJS_UPDATE", Buffer.from(data));
-      }
-    };
-    ws.on("message", onMessage);
 
     // Replay frames received while membership was being resolved. The Yjs
     // protocol listener is now installed, so the initial sync cannot vanish.
@@ -217,7 +217,6 @@ export function createYjsServer(): WebSocketServer {
     pendingMessages.length = 0;
 
     ws.on("close", () => {
-      ws.removeListener("message", onMessage);
       unregisterYDoc(roomId);
       // Only tear down this process's Redis subscription once no local
       // connections remain for the room — doc.registry's refcount already

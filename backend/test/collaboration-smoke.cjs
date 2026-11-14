@@ -388,6 +388,39 @@ async function run() {
   assert.equal(editorDoc.getText("source").toString(), beforeViewerAttempt);
   console.log("PASS viewer Yjs mutation is dropped server-side");
 
+  const recordingStart = await request("/api/sessions/" + sessionId + "/start", {
+    method: "POST", token: owner.token,
+  });
+  const recordingId = recordingStart.data.recordingId;
+  assert.ok(recordingId);
+  await new Promise((resolve) => setTimeout(resolve, 500));
+  const recordedMarker = "-recorded";
+  ownerDoc.getText("source").insert(ownerDoc.getText("source").length, recordedMarker);
+  await new Promise((resolve) => setTimeout(resolve, 700));
+  const recordingStop = await request("/api/sessions/" + sessionId + "/stop", {
+    method: "POST", token: owner.token,
+  });
+  assert.equal(recordingStop.data.recording.id, recordingId);
+
+  const replayResult = await request("/api/sessions/recordings/" + recordingId + "/replay", {
+    token: owner.token,
+  });
+  const replayEvents = replayResult.data.events;
+  assert.ok(replayEvents.some((event) => event.type === "YJS_SNAPSHOT"));
+  assert.ok(replayEvents.some((event) => event.type === "YJS_UPDATE"));
+  const replayDoc = new Y.Doc();
+  for (const event of replayEvents) {
+    const update = Buffer.from(event.payload, "base64");
+    if (event.type === "YJS_SNAPSHOT") {
+      Y.applyUpdateV2(replayDoc, update);
+    } else if (event.type === "YJS_UPDATE") {
+      Y.applyUpdateV2(replayDoc, update);
+    }
+  }
+  assert.ok(replayDoc.getText("source").toString().includes("seed-owner-editor" + recordedMarker));
+  replayDoc.destroy();
+  console.log("PASS recording captures an immediate snapshot and Yjs updates; replay reconstructs shared content");
+
   await expectTerminalAllowed(sessionId, editor.token);
   console.log("PASS invited editor can use terminal");
 
