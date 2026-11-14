@@ -15,7 +15,22 @@ test("a new developer can register and open a shared coding workspace", async ({
   await page.getByLabel("Email").fill(email);
   await page.getByLabel("Username").fill(username);
   await page.getByLabel("Password").fill("E2e-" + randomUUID() + "-Aa9!");
+
+  const registrationResponsePromise = page.waitForResponse(
+    (response) => response.url().endsWith("/api/auth/register"),
+    { timeout: 15000 }
+  );
   await page.getByRole("button", { name: "Create account" }).click();
+
+  const registrationResponse = await registrationResponsePromise;
+  const registrationBody = await registrationResponse.json().catch(() => null);
+  expect(
+    registrationResponse.ok(),
+    "registration endpoint returned " +
+      registrationResponse.status() +
+      ": " +
+      JSON.stringify(registrationBody)
+  ).toBeTruthy();
 
   await expect(page).toHaveURL(/\/sessions$/, { timeout: 15000 });
   await expect(page.getByRole("heading", { name: /Make room for/ })).toBeVisible();
