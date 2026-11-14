@@ -392,6 +392,14 @@ npm run smoke:local
 ```
 
 The smoke test creates and removes a temporary account and workspace. It verifies registration and authenticated profile access, then runs Shell, Node.js, Python, and Go files without opening the terminal first. It also checks the authenticated interactive terminal WebSocket, workspace resets, logout, and cleanup. Docker, PostgreSQL, Redis, and all four executor images must be available.
+
+For multi-user collaboration, role enforcement, and invite lifecycle checks, run:
+
+```bash
+npm run smoke:collaboration
+```
+
+This test creates temporary owner, editor, viewer, and concurrent-join accounts. It verifies real Yjs synchronization between separate WebSocket clients, server-side viewer write blocking, terminal access rules, live WebSocket revocation after role changes, invite redemption and revocation, single-use invite concurrency, first-owner race handling, and protection against removing or demoting the final owner. It also cleans up the temporary users, sessions, and workspace container.
 ## Production deployment
 
 ### Docker Compose (single server)

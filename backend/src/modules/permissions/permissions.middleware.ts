@@ -28,7 +28,7 @@ function resolveSessionId(req: Request): string | null {
  * its workspace URL is allowed by design; the *role* you get determines
  * what you can subsequently do.
  */
-export function attachSessionMembership(defaultRole: Role = "EDITOR") {
+export function attachSessionMembership(defaultRole: Role = "VIEWER") {
   return async (req: Request, res: Response, next: NextFunction) => {
     try {
       const sessionId = resolveSessionId(req);

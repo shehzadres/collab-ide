@@ -12,7 +12,7 @@ router.use(apiRateLimit);
 // Viewing config only requires membership (auto-enrolled on first touch),
 // matching how file-tree GETs work — anyone who can see the workspace can
 // see what runtime it's configured for.
-router.get("/:sessionId", attachSessionMembership(), executionController.getConfig.bind(executionController));
+router.get("/:sessionId", attachSessionMembership("VIEWER"), executionController.getConfig.bind(executionController));
 
 // Changing runtime is an EDITOR+ action, like file mutations.
 router.patch(

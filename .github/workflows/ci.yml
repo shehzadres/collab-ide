@@ -103,6 +103,9 @@ jobs:
       - name: Run full local integration smoke test
         run: npm run smoke:local
 
+      - name: Run multi-user collaboration and authorization tests
+        run: npm run smoke:collaboration
+
       - name: Stop Docker Compose stack
         if: always()
         run: docker compose --env-file .env -f docker/docker-compose.yml down -v

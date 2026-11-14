@@ -14,7 +14,8 @@
     "build": "npm run build:backend && npm run build:frontend",
     "typecheck": "npm run typecheck --prefix backend && npm run typecheck --prefix frontend",
     "test": "npm test --prefix backend",
-    "smoke:local": "npm run smoke:local --prefix backend"
+    "smoke:local": "npm run smoke:local --prefix backend",
+    "smoke:collaboration": "npm run smoke:collaboration --prefix backend"
   },
   "devDependencies": {
     "concurrently": "^8.2.2"

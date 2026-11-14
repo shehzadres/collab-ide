@@ -14,9 +14,23 @@ import { verifyAccessToken } from "../utils/jwt";
 import { logger } from "../utils/logger";
 import { env } from "../config/env";
 import { permissionsService } from "../modules/permissions/permissions.service";
+import { onMembershipChanged } from "../modules/permissions/membership.events";
 
 const sessions = new Map<WebSocket, RunningSession>();
+const activeTerminalConnections = new Map<WebSocket, { sessionId: string; userId: string }>();
 const MAX_INPUT_BYTES = 64 * 1024;
+
+onMembershipChanged((sessionId, userId) => {
+  for (const [socket, connection] of activeTerminalConnections) {
+    if (
+      connection.sessionId === sessionId &&
+      connection.userId === userId &&
+      socket.readyState === WebSocket.OPEN
+    ) {
+      socket.close(1008, "session membership changed");
+    }
+  }
+});
 
 export function attachTerminalSocket(httpServer: HttpServer, path = "/terminal") {
   const wss = new WebSocketServer({ noServer: true, maxPayload: MAX_INPUT_BYTES });
@@ -55,6 +69,7 @@ export function attachTerminalSocket(httpServer: HttpServer, path = "/terminal")
     const url = new URL(req.url || "", "http://localhost");
     const sessionId = url.searchParams.get("sessionId");
 
+    let connectedUserId = "";
     if (!sessionId || sessionId.length > 128) {
       ws.send(JSON.stringify({ type: "exit", code: 1 }));
       ws.close();
@@ -64,6 +79,7 @@ export function attachTerminalSocket(httpServer: HttpServer, path = "/terminal")
     try {
       const token = url.searchParams.get("token") || "";
       const payload = verifyAccessToken(token);
+      connectedUserId = payload.userId;
       await permissionsService.ensureMembership(sessionId, payload.userId, "VIEWER");
       await permissionsService.requireRole(sessionId, payload.userId, "EDITOR");
     } catch (error) {
@@ -72,9 +88,26 @@ export function attachTerminalSocket(httpServer: HttpServer, path = "/terminal")
       ws.close(1008, "insufficient session role");
       return;
     }
+    activeTerminalConnections.set(ws, { sessionId, userId: connectedUserId });
     let closed = false;
     let running: RunningSession | null = null;
     let idleTimer: NodeJS.Timeout | null = null;
+
+    ws.on("close", () => {
+      closed = true;
+      activeTerminalConnections.delete(ws);
+      if (idleTimer) clearTimeout(idleTimer);
+    });
+
+    try {
+      // Recheck after registration to close the narrow race where a role
+      // change lands between the initial check and socket tracking.
+      await permissionsService.requireRole(sessionId, connectedUserId, "EDITOR");
+    } catch (error) {
+      activeTerminalConnections.delete(ws);
+      ws.close(1008, "insufficient session role");
+      return;
+    }
 
     const resetIdleTimer = () => {
       if (idleTimer) clearTimeout(idleTimer);
@@ -87,11 +120,6 @@ export function attachTerminalSocket(httpServer: HttpServer, path = "/terminal")
         ws.close();
       }, env.TERMINAL_IDLE_TIMEOUT_MS);
     };
-
-    ws.on("close", () => {
-      closed = true;
-      if (idleTimer) clearTimeout(idleTimer);
-    });
 
     try {
       const config = await workspaceService.getOrCreate(sessionId);

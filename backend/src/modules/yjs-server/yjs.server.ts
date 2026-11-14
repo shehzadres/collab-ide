@@ -1,17 +1,30 @@
 import { WebSocketServer, WebSocket } from "ws";
 import { IncomingMessage } from "http";
 import * as decoding from "lib0/decoding";
-import { messageYjsSyncStep2, messageYjsUpdate } from "y-protocols/sync";
+import * as Y from "yjs";
+import { messageYjsSyncStep1, messageYjsSyncStep2, messageYjsUpdate } from "y-protocols/sync";
 import { setupWSConnection, docs } from "y-websocket/bin/utils";
 import { verifyAccessToken } from "../../utils/jwt";
 import { sessionsService } from "../sessions/sessions.service";
 import { permissionsService } from "../permissions/permissions.service";
+import { onMembershipChanged } from "../permissions/membership.events";
 import { registerYDoc, unregisterYDoc, isRoomRegistered } from "./doc.registry";
 import { attachRedisSync, detachRedisSync } from "./redis.sync";
 import { ensureSnapshottingIfRecording } from "../sessions/yjs.snapshot";
 import { logger } from "../../utils/logger";
 
 const MAX_YJS_PAYLOAD = 5 * 1024 * 1024;
+const activeConnections = new Map<string, Map<WebSocket, string>>();
+
+onMembershipChanged((sessionId, userId) => {
+  const connections = activeConnections.get(sessionId);
+  if (!connections) return;
+  for (const [socket, connectedUserId] of connections) {
+    if (connectedUserId === userId && socket.readyState === WebSocket.OPEN) {
+      socket.close(1008, "session membership changed");
+    }
+  }
+});
 const MAX_ROOM_ID_LENGTH = 128;
 
 // Outer envelope type, per y-websocket's bin/utils.cjs (not exported, so
@@ -25,11 +38,10 @@ const MAX_ROOM_ID_LENGTH = 128;
 const MESSAGE_SYNC = 0;
 
 /**
- * Returns true if this raw Yjs protocol frame would mutate the document if
- * applied (a sync-step-2 reply or an incremental update), as opposed to a
- * read-only frame like sync-step-1 (a state-vector request) or an
- * awareness broadcast. Malformed/undecodable frames are treated as
- * mutating (fail closed) rather than silently passed through.
+ * Returns true if this raw Yjs protocol frame would mutate the document
+ * if applied. SyncStep1, awareness, and empty SyncStep2 handshake replies
+ * are safe for viewers; SyncStep2 replies containing structs or delete-set
+ * entries and incremental updates are blocked. Malformed frames fail closed.
  */
 function frameMutatesDocument(data: Buffer): boolean {
   try {
@@ -39,8 +51,17 @@ function frameMutatesDocument(data: Buffer): boolean {
       // Awareness frames (outerType === 1) never mutate the Y.Doc itself.
       return false;
     }
+
     const innerType = decoding.readVarUint(decoder);
-    return innerType === messageYjsSyncStep2 || innerType === messageYjsUpdate;
+    if (innerType === messageYjsSyncStep1) return false;
+    if (innerType !== messageYjsSyncStep2 && innerType !== messageYjsUpdate) return true;
+
+    // SyncStep2 is also used for the initial handshake. A viewer must be
+    // allowed to answer with an empty update, but never with document structs
+    // or delete-set entries that would change shared state.
+    const update = decoding.readVarUint8Array(decoder);
+    const decoded = Y.decodeUpdate(update);
+    return decoded.structs.length > 0 || decoded.ds.clients.size > 0;
   } catch {
     return true;
   }
@@ -107,11 +128,39 @@ export function createYjsServer(): WebSocketServer {
       return;
     }
 
+    // The membership lookup below is asynchronous. The Yjs client sends
+    // SyncStep1 immediately after the HTTP upgrade, so buffer early frames
+    // until setupWSConnection has registered its message listener.
+    const pendingMessages: Array<{ data: Buffer; isBinary: boolean }> = [];
+    const MAX_PENDING_BYTES = 5 * 1024 * 1024;
+    let pendingBytes = 0;
+    let connectionClosed = false;
+    const bufferIncoming = (data: Buffer, isBinary: boolean) => {
+      const frame = Buffer.from(data);
+      if (pendingBytes + frame.length > MAX_PENDING_BYTES) {
+        pendingMessages.length = 0;
+        ws.close(1009, "too much data before session authorization");
+        return;
+      }
+      pendingBytes += frame.length;
+      pendingMessages.push({ data: frame, isBinary });
+    };
+    ws.on("message", bufferIncoming);
+    ws.once("close", () => {
+      connectionClosed = true;
+      pendingMessages.length = 0;
+      const connections = activeConnections.get(roomId);
+      connections?.delete(ws);
+      if (connections?.size === 0) activeConnections.delete(roomId);
+    });
+
     const url = new URL(req.url || "", "http://localhost");
     const token = url.searchParams.get("token") || "";
     let isReadOnly = false;
+    let connectedUserId = "";
     try {
       const payload = verifyAccessToken(token);
+      connectedUserId = payload.userId;
       // Resolve membership before accepting document traffic. The REST
       // workspace flow also auto-enrols first-time visitors; doing the same
       // here closes the race where the editor WebSocket connects before the
@@ -120,12 +169,21 @@ export function createYjsServer(): WebSocketServer {
       isReadOnly = role === "VIEWER";
     } catch (error) {
       logger.warn("Yjs membership resolution failed for room " + roomId, error);
+      ws.removeListener("message", bufferIncoming);
       ws.close(1011, "membership could not be verified");
       return;
     }
+    if (connectionClosed || ws.readyState !== WebSocket.OPEN) {
+      ws.removeListener("message", bufferIncoming);
+      return;
+    }
+    const roomConnections = activeConnections.get(roomId) ?? new Map<WebSocket, string>();
+    roomConnections.set(ws, connectedUserId);
+    activeConnections.set(roomId, roomConnections);
     const effectiveWs = isReadOnly ? wrapReadOnlySocket(ws) : ws;
 
     setupWSConnection(effectiveWs, req, { docName: roomId, gc: true });
+
 
     const doc = docs.get(roomId);
     if (doc) {
@@ -149,6 +207,14 @@ export function createYjsServer(): WebSocketServer {
       }
     };
     ws.on("message", onMessage);
+
+    // Replay frames received while membership was being resolved. The Yjs
+    // protocol listener is now installed, so the initial sync cannot vanish.
+    ws.removeListener("message", bufferIncoming);
+    for (const pending of pendingMessages) {
+      ws.emit("message", pending.data, pending.isBinary);
+    }
+    pendingMessages.length = 0;
 
     ws.on("close", () => {
       ws.removeListener("message", onMessage);

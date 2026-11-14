@@ -13,7 +13,8 @@
     "prisma:generate": "prisma generate",
     "postinstall": "prisma generate",
     "test": "node --test -r ts-node/register test/runtimes.test.ts",
-    "smoke:local": "node test/smoke-local.cjs"
+    "smoke:local": "node test/smoke-local.cjs",
+    "smoke:collaboration": "node test/collaboration-smoke.cjs"
   },
   "dependencies": {
     "@prisma/client": "5.22.0",
