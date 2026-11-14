@@ -20,7 +20,7 @@
     "react-dom": "^18.3.1",
     "react-router-dom": "^7.18.5",
     "y-monaco": "^0.1.6",
-    "y-websocket": "^2.0.4",
+    "y-websocket": "^3.1.0",
     "yjs": "^13.6.18",
     "zustand": "^4.5.5"
   },
