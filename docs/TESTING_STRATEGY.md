@@ -1,27 +1,22 @@
 # Testing Strategy
 
-The goal of this guide is to make test evidence repeatable and to prevent local, CI, and production results from being conflated.
+The goal is to make test evidence repeatable and to prevent local, CI, and production results from being conflated.
 
 ## Test layers
 
-| Layer | What it should prove | Current repository entry point |
+| Layer | What it proves | Entry point |
 | --- | --- | --- |
-| Backend unit tests | Isolated backend behavior | `npm test` |
-| Type checking | TypeScript contracts compile | `npm run typecheck` |
-| Production builds | Backend and frontend compile for deployment | `npm run build` |
-| Runtime smoke | Auth, runtime execution, terminal, cleanup | `npm run smoke:local` |
-| Collaboration integration | Invitations, roles, Yjs, recording, revocation | `npm run smoke:collaboration` |
-| Browser acceptance | Real UI flows through the deployed frontend shell | `npx playwright test` (Chromium) |
+| Backend unit | Isolated backend behavior | `npm test` |
+| Type checking and builds | Both applications compile | `npm run typecheck`, `npm run build` |
+| Runtime integration | Registration, execution runtimes, terminal, cleanup | `npm run smoke:local` |
+| Collaboration integration | Roles, invites, Yjs sync, recording, revocation | `npm run smoke:collaboration` |
+| Browser acceptance | Registration, sessions overview, OWNER workspace creation | `npx playwright test` (Chromium) |
 | Multi-process acceptance | Redis coordination across backend processes | Dedicated local acceptance setup |
-| Hosted production acceptance | Deployed registration, invites, editing, persistence | Must be explicitly run against the deployed environment |
+| Hosted production acceptance | Registration, invites, editing, persistence on deployed URLs | Must be explicitly run against production |
 
 ## Safe local setup
 
-The smoke suites create temporary users, sessions, files, and execution workspaces. Use only a disposable local/test database and a test backend.
-
-Never point destructive or data-creating smoke tests at production unless the test plan explicitly uses isolated test accounts and the user has approved the run.
-
-Install dependencies and run static checks:
+The smoke suites create temporary users, sessions, files, and execution workspaces. Use only a disposable local/test database and backend. Never point data-creating smoke tests at production data.
 
 ```bash
 npm ci
@@ -32,7 +27,7 @@ npm run typecheck
 npm run build
 ```
 
-Run integration suites only after the full local Docker Compose environment, PostgreSQL, Redis, and executor images are available:
+Run integration suites only after PostgreSQL, Redis, Docker, and all executor images are available:
 
 ```bash
 npm run smoke:local
@@ -41,18 +36,18 @@ npm run smoke:collaboration
 
 ## CI workflow
 
-The current GitHub Actions workflow runs:
+The GitHub Actions workflow:
 
-1. Install root, backend, and frontend dependencies.
-2. Audit backend and frontend dependencies.
-3. Run backend unit tests.
-4. Typecheck and build both applications.
-5. Start the Docker Compose stack.
-6. Wait for backend health.
-7. Run runtime and collaboration smoke suites.
-8. Run the Chromium registration-to-workspace acceptance test and upload its report, screenshots, trace, and video artifacts.\n9. Stop the stack and remove CI volumes even when earlier steps fail.
+1. Installs root, backend, and frontend dependencies.
+2. Audits backend and frontend dependencies.
+3. Runs backend unit tests, typechecks, and production builds.
+4. Starts the Docker Compose stack and waits for backend health.
+5. Runs runtime and collaboration integration smoke suites.
+6. Runs a Chromium registration-to-workspace browser acceptance test.
+7. Uploads Playwright HTML, screenshots, traces, and video artifacts, including on failure.
+8. Stops the stack and removes CI volumes even when earlier steps fail.
 
-The CI workflow provides backend/infrastructure integration coverage plus one Chromium UI acceptance path: registration, session overview, and workspace creation as OWNER. A passing run proves only that path. It does not yet prove invitation redemption or two independent browser windows collaborating through the actual UI. The backend collaboration smoke suite separately verifies Yjs synchronization, role enforcement, invite lifecycle, and recording/replay at the service/WebSocket layer.
+A passing browser test proves only registration, the session overview, and workspace creation as OWNER. It does not yet prove invitation redemption or two independent browser windows collaborating through the UI. The backend collaboration suite separately verifies Yjs synchronization, role enforcement, invite lifecycle, and recording/replay at the service/WebSocket layer.
 
 ## Required regression areas
 
@@ -70,7 +65,7 @@ The CI workflow provides backend/infrastructure integration coverage plus one Ch
 - Redis-backed collaboration works across separate backend processes.
 
 ### Execution
-- Each supported runtime starts and executes a small deterministic command.
+- Each supported runtime starts and executes a deterministic command.
 - Workspace reset and cleanup are correct.
 - Viewer terminal access is rejected.
 - Network access defaults to disabled.
@@ -81,24 +76,20 @@ The CI workflow provides backend/infrastructure integration coverage plus one Ch
 - Replay reconstructs expected document content.
 - Graceful shutdown flushes pending recording events.
 
-## Reporting improvements to implement
+## Remaining quality improvements
 
-The next testing improvements should be evidence-producing, not just more green checkmarks:
-
-- Add a Playwright suite for registration, workspace creation, invitation redemption, two-user editing, and persistence.
-- Upload JUnit/HTML test reports as CI artifacts.
-- Publish coverage summaries with explicit scope and thresholds.
-- Save browser screenshots and traces on failure.
-- Add a separate multi-process Redis test job if CI capacity permits.
-- Keep production acceptance results in a dated QA record, with test environment and commit SHA.
+- Extend Playwright to invitation redemption, two-user editing, and persistence through independent browser contexts.
+- Add frontend component/unit tests for high-risk state and permission behavior.
+- Establish coverage reporting and thresholds from a measured baseline.
+- Add axe-based accessibility checks for authentication, sessions, invitations, and workspace screens, followed by manual keyboard/reflow review.
+- Measure Yjs propagation and reconnect behavior in a controlled local/staging environment; do not treat health-route timing as collaboration performance.
+- Keep a dated QA record with commit SHA, workflow run, test layers, pass/fail counts, environment, and artifact links.
 
 ## Evidence language
 
-Use precise labels:
-
-- **Unit passed:** a named unit test command completed successfully.
+- **Unit passed:** the named unit test command completed successfully.
 - **Integration passed:** the relevant service stack and integration suite completed successfully.
-- **Browser E2E passed:** an automated or documented browser scenario completed against the stated environment.
+- **Browser E2E passed:** the exact browser scenario completed in the stated environment.
 - **Production verified:** the exact scenario was run against the deployed URL and commit.
 - **Not tested:** no evidence exists yet.
 
