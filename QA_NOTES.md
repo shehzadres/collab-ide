@@ -71,3 +71,33 @@ Repeated automated login attempts triggered the configured authentication rate l
 - Actual WebSocket revocation across two running backend replicas (Redis cross-process pub/sub itself passed).
 - Hosted API authentication, invite redemption, collaboration, and role revocation.
 - GitHub Actions for the latest local changes.
+
+
+## Verification update (2026-11-14, full local acceptance rerun)
+
+This section supersedes earlier notes in this file that reported local PostgreSQL and Redis as unavailable. The current Docker Compose environment is restored and healthy.
+
+### Infrastructure
+- `docker compose -f docker/docker-compose.yml --env-file .env ps`: PostgreSQL and Redis healthy; backend healthy; frontend running.
+- Backend `http://localhost:4000/health`: HTTP 200.
+- Frontend `http://localhost/`: HTTP 200.
+- All four required executor images exist: `collab-ide-executor-shell`, `collab-ide-executor-node`, `collab-ide-executor-python`, and `collab-ide-executor-go`.
+
+### Functional acceptance
+- Backend runtime unit tests: 4 passed, 0 failed.
+- `npm run smoke:local`: passed registration and response sanitization, authenticated profile, Node execution and workspace reset, Python execution and workspace reset, Go execution and workspace reset, Shell execution and workspace reset, authenticated interactive terminal WebSocket, terminal workspace reset, logout, and temporary-record cleanup.
+- `npm run smoke:collaboration`: all 16 checks passed, covering owner/editor/viewer authorization, file and execution restrictions, viewer terminal rejection, invite lifecycle and max-use enforcement, concurrent invite redemption, Yjs synchronization, viewer mutation rejection, editor terminal access, live socket revocation, concurrent owner creation/demotion, and last-owner protection.
+- Root `npm run typecheck`: passed.
+- Root `npm run build`: passed. Frontend Vite build reports a 2.29 MB Monaco chunk (594 KB gzip); it is lazy-loaded and excluded from the initial authentication route, but remains a bundle-size optimization target.
+- `npm audit --prefix backend --omit=dev`: 0 vulnerabilities.
+- `npm audit --prefix frontend`: 0 vulnerabilities.
+- `git diff --check`: clean.
+- Playwright local browser QA: login and registration routes loaded; email/password fields and three registration fields found; mobile viewport has no horizontal overflow; zero page errors or console errors.
+
+### Remaining gaps
+- A true two-independent-browser-profile end-to-end collaboration run remains outstanding; the 16-test collaboration smoke suite validates multi-client WebSocket behavior but is not a complete browser UX test.
+- Cross-replica WebSocket revocation with two live backend replicas remains outstanding; Redis cross-process pub/sub was verified separately.
+- The Railway account currently has no Collab IDE project, and the configured Railway API domain returns `Application not found`.
+- The Vercel SPA rewrite is present locally but has not been deployed. Hosted auth/collaboration remain unverified.
+- Local `main` is five commits ahead of `origin/main`. Do not push until exposed historical credentials are rotated and the user explicitly approves rewriting public Git history.
+- No secrets were printed or copied into this QA record.
