@@ -31,6 +31,7 @@ Collab IDE brings a shared code editor, file workspace, presence, session permis
 - [Deployment](#deployment)
 - [Repository guide](#repository-guide)
 - [Known limitations](#known-limitations)
+- [Documentation](#documentation)
 - [Contributing](#contributing)
 - [Security](#security)
 - [License](#license)
@@ -386,6 +387,7 @@ collab-ide/
 │   │   └── store/             # Zustand state
 │   └── vercel.json            # SPA fallback
 ├── docker/                    # Compose, Nginx, executor Dockerfiles
+├── docs/                      # Architecture, security, collaboration, testing, scale, showcase
 ├── QA_NOTES.md                # Verification history
 ├── UI_REDESIGN.md             # Visual system and interface rationale
 ├── CONTRIBUTING.md
@@ -400,6 +402,21 @@ collab-ide/
 - Network access for package installation is an OWNER-controlled workspace setting, but currently enables general container egress rather than a registry-only allowlist.
 - The Docker execution setup is designed around a Docker host accessible to the backend. Redis handles collaboration state distribution; it does not schedule containers across machines.
 - The editor and file collaboration model is session-scoped. Organization/team administration and global user management are outside the current scope.
+
+## Documentation
+
+The deeper engineering guides are maintained separately so the README stays useful as a project entry point:
+
+| Guide | What it covers |
+| --- | --- |
+| [Architecture](docs/ARCHITECTURE.md) | Frontend/backend boundaries, data flow, persistence, execution |
+| [Security model](docs/SECURITY_MODEL.md) | Trust boundaries, authorization, Docker risks, recording privacy |
+| [Collaboration flow](docs/COLLABORATION_FLOW.md) | Session lifecycle, invitations, Yjs synchronization, role revocation |
+| [Testing strategy](docs/TESTING_STRATEGY.md) | Test layers, safe execution, regression matrix, evidence standards |
+| [Scalability](docs/SCALABILITY.md) | Current scaling model, Docker scheduling boundary, benchmark plan |
+| [Recruiter showcase guide](docs/SHOWCASE_GUIDE.md) | Real screenshot/GIF capture plan and concise demo script |
+
+The showcase guide deliberately describes assets to capture rather than presenting mock screenshots as evidence. Add real screenshots and a two-browser collaboration recording after verifying them against the current application.
 
 ## Contributing
 
