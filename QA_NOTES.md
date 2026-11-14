@@ -1,3 +1,36 @@
+# Latest deployment verification — 2026-11-14
+
+This update supersedes older deployment-blocker statements later in this historical log. Earlier entries are retained as an audit trail.
+
+## Current deployment state
+
+- Frontend: [https://collab-ide-frontend-iota.vercel.app](https://collab-ide-frontend-iota.vercel.app)
+- Backend: Railway service `collab-ide-backend`; latest observed deployment commit `fda49aed`, deployment status SUCCESS, one running replica.
+- Backend health endpoint returned HTTP 200.
+- CORS preflight from the deployed frontend origin returned HTTP 204 with credentials enabled.
+- Unauthenticated `/api/auth/me` returned the expected HTTP 401.
+- An unauthenticated Yjs WebSocket upgrade returned the expected HTTP 401.
+- Hosted demo mode intentionally disables Docker-dependent terminal and execution features. The hosted terminal probe returned HTTP 503, consistent with this limitation.
+
+## Functional verification status
+
+- Local root typecheck and production builds passed.
+- Four backend runtime unit tests passed.
+- Local runtime smoke tests passed for Shell, Node.js, Python, Go, workspace resets, and the authenticated terminal WebSocket.
+- The local collaboration integration suite passed all 17 checks for role enforcement, invitations, Yjs synchronization, terminal permissions, recording/replay, and authorization edge cases.
+- Local two-context collaboration, persistence after reload, and the two-backend-process Redis synchronization/revocation tests passed in the prior acceptance run.
+- The frontend read-only browser pass covered login/registration routes, expected form fields, protected-route redirects, mobile layout, and absence of failed network requests or HTTP 5xx responses.
+
+## Explicitly not claimed
+
+- The production browser flow has not completed a fresh registration, authenticated invite redemption, and independent two-browser live-edit acceptance run in this verification pass.
+- The hosted terminal and code-execution paths are not available while demo mode is enabled.
+- Local Docker execution results must not be interpreted as proof that Docker execution is available on the hosted demo.
+
+For repeatable verification, use the GitHub Actions workflow and the local smoke commands documented in [README.md](README.md). Run data-creating smoke tests only against disposable local/test infrastructure.
+
+---
+
 # QA and Engineering Notes
 
 ## Verification performed
