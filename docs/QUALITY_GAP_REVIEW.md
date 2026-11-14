@@ -20,7 +20,7 @@ The comparison is based on repository documentation and checked-in evidence, not
 
 | Standard | Existing portfolio example | Collab IDE at review time | Gap |
 |---|---|---|---|
-| Product visuals | Visual Regex Builder commits multiple real UI screenshots; E2E QA includes application screenshots | Showcase guide describes the required assets, but the product screenshots and two-browser GIF are not committed | Capture and publish real application evidence |
+| Product visuals | Visual Regex Builder and Nexus Transfer both commit real product screenshots; E2E QA also includes application screenshots | Showcase guide describes the required assets, but the product screenshots and two-browser GIF are not committed | Capture and publish real application evidence |
 | Recruiter-facing evidence | API QA, Security Lab, and Performance Platform have dedicated visual dashboards | README is technically detailed but has no compact project showcase page | Add a concise visual case study/dashboard |
 | Browser automation | E2E framework covers nine scenarios across Chromium, Firefox, and WebKit, with HTML/JUnit and failure artifacts | One Chromium path covers registration, session overview, and OWNER workspace creation | Expand browser-level flows and browser coverage |
 | Backend collaboration proof | Performance and API projects publish dated run evidence; Security Lab documents findings and retests | Collaboration smoke suite has strong checks for Yjs sync, roles, invites, recording/replay, and revocation | Keep service-level evidence, but add independent-browser UI acceptance |
