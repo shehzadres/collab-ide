@@ -113,3 +113,12 @@ This section supersedes earlier notes in this file that reported local PostgreSQ
 - Rewrote local reachable Git history with `git filter-repo`. A targeted audit checked all 13 historical credential strings: zero remained in reachable history, and the leaked Neon hostname was absent.
 - Public GitHub history has not yet been force-pushed. The push is the remaining security-remediation step; it must use an exact force-with-lease expectation against the remote SHA recorded in `PHASE_STATUS.md`.
 - Keep the private pre-cleanup Git bundle off GitHub and out of shared folders. Anyone with an old clone should reclone after publication.
+
+
+## Public history cleanup published (2026-11-14)
+
+- Completed the atomic force-with-lease update of GitHub `main`, `demo`, and `v1.0.0` after rewriting the local history.
+- Verified remote refs: `main` points to `4e5d1df6cf59ec509b461178bbecf50b1c3a72da`, `demo` points to the cleaned `674a88c` history, and `v1.0.0` points to the rewritten tag object.
+- The 13 exact historical credential strings checked by the local audit had zero matches in reachable rewritten history; the exposed Neon hostname was also absent.
+- GitHub Actions CI started on the rewritten main commit. Its result is still pending at the time of this note.
+- Old clones/forks and cached GitHub commit views are outside the rewritten branch/tag refs. Reclone old working copies; contact GitHub Support if cached old commit pages remain accessible.
