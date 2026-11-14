@@ -1,5 +1,4 @@
 import { useRef, useEffect, lazy, Suspense } from "react";
-import { loader } from "@monaco-editor/react";
 import type { OnMount } from "@monaco-editor/react";
 import type * as monaco from "monaco-editor";
 import { Code2 } from "lucide-react";
@@ -12,8 +11,9 @@ import { getFileText } from "../../lib/yjs/ydoc";
 import { bindMonacoToYjs } from "../../lib/yjs/bindings";
 import { filesApi } from "../../lib/api/files.api";
 import { UserAvatars } from "../Presence/UserAvatars";
+import { loadMonacoEditor } from "../../lib/editor/loadMonacoEditor";
 
-const Editor = lazy(() => import("@monaco-editor/react"));
+const Editor = lazy(loadMonacoEditor);
 
 interface CollaborativeEditorProps {
   roomId: string;
@@ -196,6 +196,3 @@ export function CollaborativeEditor({ roomId }: CollaborativeEditorProps) {
     </div>
   );
 }
-
-// Serve Monaco's AMD loader from the installed package instead of relying on the default CDN.
-loader.config({ paths: { vs: "/node_modules/monaco-editor/min/vs" } });

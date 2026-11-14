@@ -2,8 +2,9 @@ import { useEffect, useRef, lazy, Suspense } from "react";
 import type { OnMount } from "@monaco-editor/react";
 import type * as monaco from "monaco-editor";
 import { useTheme } from "../../hooks/useTheme";
+import { loadMonacoEditor } from "../../lib/editor/loadMonacoEditor";
 
-const Editor = lazy(() => import("@monaco-editor/react"));
+const Editor = lazy(loadMonacoEditor);
 
 interface ReplayEditorViewProps {
   content: string;

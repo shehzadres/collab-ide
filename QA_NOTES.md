@@ -48,3 +48,26 @@ Repeated automated login attempts triggered the configured authentication rate l
 - Frontend production build passed after the change (`tsc -b && vite build`, 2,268 modules transformed).
 - Added and ran `artifacts/monaco-loader-smoke.cjs`: Monaco mounted successfully in Microsoft Edge (`.monaco-editor` present), with zero page errors and zero failed network requests.
 - Full workspace integration could not be re-run: the local PostgreSQL database configured in `backend/.env` is unavailable at `localhost:55432`; the Windows PostgreSQL service listens on `5432` but rejects the configured `collab_user` credentials. Redis at `localhost:6379` is also unavailable. Backend starts on port 4000 but repeatedly logs Redis connection errors. Do not mark collaboration, runtime execution, or other backend-dependent acceptance tests as passed until local services are restored.
+
+## Verification update (2026-11-14)
+
+### Local browser and deployment checks
+- Local Docker frontend and backend are running; backend `/health` returns HTTP 200 and the frontend root returns HTTP 200.
+- Playwright verified the local login and registration screens, required fields, desktop/mobile rendering, and zero browser page errors.
+- Mobile registration layout has no horizontal overflow.
+- Production preview build verified direct navigation to both `/login` and `/register`; both render their expected forms with zero page errors.
+- The login route does not request the Monaco editor bundle. Monaco is now loaded through a shared dynamic-import helper only when an editor view mounts.
+- The Monaco chunk remains approximately 2.29 MB uncompressed (594 KB gzip), but it is deferred instead of being pulled into the initial authentication bundle.
+- Redis pub/sub delivered a membership-change event between two separate Node processes. This verifies Redis cross-process delivery, but is not a full two-backend-replica WebSocket acceptance test.
+
+### Hosted deployment blockers found
+- Vercel project `collab-ide-frontend` has a READY production deployment, but the deployment URL is protected by Vercel sign-in.
+- The public project domain `collab-ide-frontend-iota.vercel.app` serves the login page, but direct navigation to `/register` returns Vercel HTTP 404. Added `frontend/vercel.json` SPA fallback rewrites to resolve deep links on the next deployment.
+- The configured Railway API host `collab-ide-backend-production.up.railway.app` currently returns HTTP 404 with `Application not found`. The connected Railway account does not list a Collab IDE project, so the backend service must be restored or redeployed before hosted authentication and collaboration can work.
+- The latest Vercel production deployment is built from an older Git commit; local changes are not deployed because the branch has four commits ahead and public Git history still contains credentials that must be rotated and removed before pushing.
+
+### Still not verified
+- Browser-based collaboration between two independently authenticated browser profiles.
+- Actual WebSocket revocation across two running backend replicas (Redis cross-process pub/sub itself passed).
+- Hosted API authentication, invite redemption, collaboration, and role revocation.
+- GitHub Actions for the latest local changes.

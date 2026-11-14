@@ -5,7 +5,7 @@ This document covers deploying Collab IDE for free using:
 | Service    | Purpose          |
 |------------|------------------|
 | Vercel     | Frontend         |
-| Render     | Backend          |
+| Railway    | Backend          |
 | Neon       | PostgreSQL       |
 | Upstash    | Redis            |
 
@@ -50,12 +50,14 @@ A polished in-app notice explains this to users.
 
 ---
 
-## 3 — Render (Backend)
+## 3 — Railway (Backend)
 
-1. Create a new **Web Service** pointing to the `backend/` directory.
-2. Build command: `npm install && npx prisma generate && npm run build`
-3. Start command: `npx prisma migrate deploy && node dist/server.js`
-4. Set these environment variables:
+1. Create a Railway project and add a service connected to the `shehzadres/collab-ide` GitHub repository.
+2. Set the service root directory to `/backend`.
+3. Build command: `npm install && npx prisma generate && npm run build`
+4. Start command: `npx prisma migrate deploy && node dist/server.js`
+5. Attach PostgreSQL and Redis services, or provide external Neon and Upstash URLs.
+6. Set these environment variables:
 
 ```
 NODE_ENV=production
