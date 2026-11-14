@@ -25,6 +25,7 @@ Collab IDE brings a shared code editor, file workspace, presence, session permis
 - [Environment configuration](#environment-configuration)
 - [Development commands](#development-commands)
 - [Testing and verification](#testing-and-verification)
+- [Browser acceptance and performance](#browser-acceptance-and-performance)
 - [Roles and access](#roles-and-access)
 - [Execution and sandboxing](#execution-and-sandboxing)
 - [Recording and replay](#recording-and-replay)
@@ -281,7 +282,7 @@ Run commands from the repository root unless a working directory is shown.
 
 ## Testing and verification
 
-The GitHub Actions workflow runs on pushes and pull requests targeting `main`. It installs dependencies, audits packages, runs backend unit tests, typechecks and builds both applications, starts the Docker Compose environment, waits for backend health, and runs the local runtime and collaboration smoke suites.
+The GitHub Actions workflow runs on pushes and pull requests targeting `main`. It installs dependencies, audits packages, runs backend unit tests, typechecks and builds both applications, starts the Docker Compose environment, waits for backend health, runs the local runtime and collaboration smoke suites, and executes a Chromium browser acceptance test. Browser reports, screenshots, traces, and failure video are uploaded as a CI artifact.
 
 Run the main checks locally:
 
@@ -308,6 +309,24 @@ npm run smoke:collaboration
 The collaboration suite covers role authorization, invitation lifecycle and usage limits, concurrent invitation redemption, Yjs synchronization, viewer write restrictions, terminal authorization, socket revocation, and owner-assignment edge cases. The local runtime suite exercises Shell, Node.js, Python, Go, workspace reset, and authenticated terminal behavior.
 
 See [QA_NOTES.md](QA_NOTES.md) for the verification record and [GitHub Actions](https://github.com/shehzadres/collab-ide/actions) for CI runs.
+
+## Browser acceptance and performance
+
+The Playwright browser smoke test covers registration, the session overview, and opening a workspace as its OWNER. Run it locally after starting the complete Docker Compose stack:
+
+```bash
+npm install --no-save --no-package-lock @playwright/test
+npx playwright install chromium
+npx playwright test
+```
+
+A low-volume health endpoint sampler is available for baseline timing. It reports min/mean/p50/p95/max and is not a load test:
+
+```bash
+PERF_BASE_URL=http://127.0.0.1:4000 PERF_PATH=/health PERF_SAMPLES=30 node scripts/measure-http.mjs
+```
+
+See [Browser and performance evidence](docs/BROWSER_AND_PERFORMANCE_EVIDENCE.md) for safe production measurement and screenshot guidance. Do not present health-route timing as an application performance benchmark.
 
 ## Roles and access
 
@@ -415,6 +434,7 @@ The deeper engineering guides are maintained separately so the README stays usef
 | [Testing strategy](docs/TESTING_STRATEGY.md) | Test layers, safe execution, regression matrix, evidence standards |
 | [Scalability](docs/SCALABILITY.md) | Current scaling model, Docker scheduling boundary, benchmark plan |
 | [Recruiter showcase guide](docs/SHOWCASE_GUIDE.md) | Real screenshot/GIF capture plan and concise demo script |
+| [Browser and performance evidence](docs/BROWSER_AND_PERFORMANCE_EVIDENCE.md) | Playwright acceptance, CI artifacts, low-volume latency measurement |
 
 The showcase guide deliberately describes assets to capture rather than presenting mock screenshots as evidence. Add real screenshots and a two-browser collaboration recording after verifying them against the current application.
 
