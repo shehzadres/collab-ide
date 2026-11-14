@@ -122,3 +122,22 @@ This section supersedes earlier notes in this file that reported local PostgreSQ
 - The 13 exact historical credential strings checked by the local audit had zero matches in reachable rewritten history; the exposed Neon hostname was also absent.
 - GitHub Actions CI started on the rewritten main commit. Its result is still pending at the time of this note.
 - Old clones/forks and cached GitHub commit views are outside the rewritten branch/tag refs. Reclone old working copies; contact GitHub Support if cached old commit pages remain accessible.
+
+
+## Continued phase work (2026-11-14)
+
+### CI and engineering quality
+- GitHub Actions run for commit `1f754af2557f33ef7909e58a889cd75a4089db55` completed successfully. All 20 job steps, including Docker Compose startup, backend health, local integration smoke, and multi-user collaboration/authorization tests, passed.
+- Current uncommitted frontend changes lazy-load route components, add an accessible route loading fallback, copy Monaco AMD loader assets into `dist/monaco/vs`, and split Monaco/collaboration/terminal/React vendor chunks.
+- Local root typecheck and production build passed with those changes. Monaco loader asset exists in production dist. Initial app JS is approximately 79 KB (30 KB gzip); Monaco is approximately 2.30 MB (598 KB gzip) but remains lazy-loaded.
+- Production preview QA passed direct `/login` and `/register` routes, expected form fields, no initial Monaco request on login, and Monaco mounting with zero failed network requests or page errors.
+
+### Functional acceptance follow-up
+- Found local test-environment CORS rejection: Docker backend initially allowed only `http://localhost`, while the Playwright QA origin was `http://localhost:5176`. Updated the ignored local root `.env` allowlist and recreated the backend. Health check returned HTTP 200.
+- A direct Yjs browser diagnostic confirmed WebSocket connection and sync state become true, with no browser errors or failed HTTP responses.
+- Independent-user browser acceptance is still not passed. Several attempts were blocked by the configured registration rate limit or by test-harness session setup/Monaco focus. The collaboration smoke suite and CI remain green, but they are not a substitute for this browser acceptance test.
+- File persistence/replay and two-live-backend-replica WebSocket revocation remain outstanding.
+
+### Deployment readiness
+- Rewrote `DEMO_DEPLOYMENT.md` to use the correct Railway backend host, `/api` REST base, `/ws` Yjs base, and `/terminal` WebSocket path, plus a post-deployment acceptance checklist.
+- No new Neon, Upstash, or Railway resources were created. A fresh hosted database and Redis instance are required; do not claim hosted deployment readiness yet.

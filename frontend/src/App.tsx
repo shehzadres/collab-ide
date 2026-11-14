@@ -1,18 +1,19 @@
+import { lazy, Suspense } from "react";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
-import LoginPage from "./pages/LoginPage";
-import RegisterPage from "./pages/RegisterPage";
-import SessionsPage from "./pages/SessionsPage";
-import WorkspacePage from "./pages/WorkspacePage";
-import InviteRedeemPage from "./pages/InviteRedeemPage";
 import { ProtectedRoute } from "./components/Auth/ProtectedRoute";
 import { CommandPalette } from "./components/CommandPalette/CommandPalette";
 import { ToastContainer } from "./components/Notifications/ToastContainer";
+import { AppRouteLoading } from "./components/AppRouteLoading";
 import { useTheme } from "./hooks/useTheme";
 import { useKeyboardShortcuts } from "./hooks/useKeyboardShortcuts";
 
+const LoginPage = lazy(() => import("./pages/LoginPage"));
+const RegisterPage = lazy(() => import("./pages/RegisterPage"));
+const SessionsPage = lazy(() => import("./pages/SessionsPage"));
+const WorkspacePage = lazy(() => import("./pages/WorkspacePage"));
+const InviteRedeemPage = lazy(() => import("./pages/InviteRedeemPage"));
+
 export default function App() {
-  // Applies the persisted theme's CSS variables on every load, before any
-  // route renders, so there's no flash-of-wrong-theme on refresh.
   useTheme();
   useKeyboardShortcuts();
 
@@ -20,18 +21,20 @@ export default function App() {
     <BrowserRouter>
       <CommandPalette />
       <ToastContainer />
-      <Routes>
-        <Route path="/login" element={<LoginPage />} />
-        <Route path="/register" element={<RegisterPage />} />
+      <Suspense fallback={<AppRouteLoading />}>
+        <Routes>
+          <Route path="/login" element={<LoginPage />} />
+          <Route path="/register" element={<RegisterPage />} />
 
-        <Route element={<ProtectedRoute />}>
-          <Route path="/sessions" element={<SessionsPage />} />
-          <Route path="/workspace/:sessionId" element={<WorkspacePage />} />
-          <Route path="/invite/:token" element={<InviteRedeemPage />} />
-        </Route>
+          <Route element={<ProtectedRoute />}>
+            <Route path="/sessions" element={<SessionsPage />} />
+            <Route path="/workspace/:sessionId" element={<WorkspacePage />} />
+            <Route path="/invite/:token" element={<InviteRedeemPage />} />
+          </Route>
 
-        <Route path="*" element={<Navigate to="/login" replace />} />
-      </Routes>
+          <Route path="*" element={<Navigate to="/login" replace />} />
+        </Routes>
+      </Suspense>
     </BrowserRouter>
   );
 }

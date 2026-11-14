@@ -1,103 +1,93 @@
 # Free Hosting Deployment Guide — Demo Mode
 
-This document covers deploying Collab IDE for free using:
+This deployment uses:
 
-| Service    | Purpose          |
-|------------|------------------|
-| Vercel     | Frontend         |
-| Railway    | Backend          |
-| Neon       | PostgreSQL       |
-| Upstash    | Redis            |
+| Service | Purpose |
+|---|---|
+| Vercel | React frontend |
+| Railway | Node.js API and WebSocket backend |
+| Neon | PostgreSQL |
+| Upstash | Redis pub/sub |
 
-## What is Demo Mode?
+Demo mode is intentional for hosted free-tier deployment. The backend requires Docker access for isolated code execution, which typical managed application hosts do not expose. Demo mode keeps authentication, collaboration, file management, invites, replay, permissions, notifications, themes, and command palette available while hiding Docker-dependent terminal and execution features.
 
-Demo mode disables Docker-dependent features (terminal, Run, Install, workspace
-reset) that cannot run on free hosting platforms. All other features remain
-fully operational:
+## 1. Neon PostgreSQL
 
-✅ Authentication (register / login / JWT / refresh)  
-✅ Real-time Yjs CRDT collaboration  
-✅ Multi-cursor awareness  
-✅ Session replay  
-✅ File explorer  
-✅ Invite links  
-✅ Role-based permissions (OWNER / EDITOR / VIEWER)  
-✅ Notifications  
-✅ Themes & command palette  
-✅ WebSockets / Redis pub-sub  
+1. Create a fresh Neon project and production branch.
+2. Apply the repository's Prisma migrations during backend startup.
+3. Copy the pooled PostgreSQL connection string. Require SSL.
+4. Store it only in Railway's `DATABASE_URL` variable.
 
-❌ Terminal panel (requires Docker)  
-❌ Run file (requires Docker)  
-❌ Install packages (requires Docker)  
-❌ Workspace reset (requires Docker)  
+Do not reuse the previously exposed database password or the archived database branch.
 
-A polished in-app notice explains this to users.
+## 2. Upstash Redis
 
----
+1. Create a Redis database.
+2. Copy its TLS Redis URL (usually starts with `rediss://`).
+3. Store it only in Railway's `REDIS_URL` variable.
 
-## 1 — Neon (PostgreSQL)
+Redis pub/sub carries Yjs document updates between backend processes. Use the same Redis database for every backend replica.
 
-1. Create a free project at https://neon.tech
-2. Copy the connection string — it looks like:
-   `postgresql://user:pass@ep-xxx.us-east-2.aws.neon.tech/neondb?sslmode=require`
+## 3. Railway backend
 
----
+1. Create a Railway project.
+2. Add a service connected to `shehzadres/collab-ide`, branch `main`.
+3. Set the service root directory to `/backend`.
+4. Build command: `npm install && npx prisma generate && npm run build`.
+5. Start command: `npx prisma migrate deploy && node dist/server.js`.
+6. Expose the service's HTTP port. The app listens on Railway's `PORT` environment variable (default 4000).
+7. Enable WebSocket support for the same service domain.
 
-## 2 — Upstash (Redis)
+Set these service variables:
 
-1. Create a free database at https://upstash.com
-2. Copy the **Redis URL** (starts with `rediss://`)
-
----
-
-## 3 — Railway (Backend)
-
-1. Create a Railway project and add a service connected to the `shehzadres/collab-ide` GitHub repository.
-2. Set the service root directory to `/backend`.
-3. Build command: `npm install && npx prisma generate && npm run build`
-4. Start command: `npx prisma migrate deploy && node dist/server.js`
-5. Attach PostgreSQL and Redis services, or provide external Neon and Upstash URLs.
-6. Set these environment variables:
-
-```
+```env
 NODE_ENV=production
-DATABASE_URL=<your Neon connection string>
-REDIS_URL=<your Upstash Redis URL>
-JWT_ACCESS_SECRET=<64-char random hex>
-JWT_REFRESH_SECRET=<different 64-char random hex>
-CLIENT_URL=<your Vercel frontend URL, e.g. https://collab-ide.vercel.app>
+DATABASE_URL=<Neon pooled PostgreSQL URL>
+REDIS_URL=<Upstash TLS Redis URL>
+JWT_ACCESS_SECRET=<unique random secret, at least 32 characters>
+JWT_REFRESH_SECRET=<different unique random secret, at least 32 characters>
+CLIENT_URL=https://<your-vercel-frontend-domain>
 DEMO_MODE=true
 ```
 
----
+Generate new independent JWT secrets for the hosted environment. Do not reuse local secrets or paste secret values into source files, documentation, or chat.
 
-## 4 — Vercel (Frontend)
+The backend's `CLIENT_URL` is an exact origin allowlist. If you use more than one frontend domain, separate origins with commas and no quotes.
 
-1. Import the repository and set the **root directory** to `frontend/`.
-2. Build command: `npm run build`
-3. Output directory: `dist`
-4. Set these environment variables:
+## 4. Vercel frontend
 
-```
-VITE_API_URL=https://<your-render-backend>.onrender.com/api
-VITE_YJS_WS_URL=wss://<your-render-backend>.onrender.com
-VITE_TERMINAL_WS_URL=wss://<your-render-backend>.onrender.com/terminal
+1. Import `shehzadres/collab-ide`.
+2. Set the root directory to `frontend/`.
+3. Build command: `npm run build`.
+4. Output directory: `dist`.
+5. Keep the included `frontend/vercel.json` SPA rewrite so direct navigation to `/login`, `/register`, and workspace routes resolves to `index.html`.
+
+Set these Vercel environment variables for Production and Preview as appropriate:
+
+```env
+VITE_API_URL=https://<your-railway-service-domain>/api
+VITE_YJS_WS_URL=wss://<your-railway-service-domain>/ws
+VITE_TERMINAL_WS_URL=wss://<your-railway-service-domain>/terminal
 VITE_DEMO_MODE=true
 ```
 
----
+These values are embedded at frontend build time. Redeploy after changing them.
 
-## Restoring Full Execution (Self-Hosted / Local)
+## 5. Post-deployment acceptance
 
-Simply set:
+Verify all of the following before sharing the public demo:
 
-```
-# Backend
-DEMO_MODE=false
+- `GET https://<railway-domain>/health` returns HTTP 200.
+- Registration, login, refresh, logout, and authenticated profile work from the Vercel origin.
+- Two separate browser profiles can join one session and exchange live Yjs edits.
+- Editor and viewer roles enforce their read/write restrictions.
+- Invite creation, redemption, expiration, max-use, and revocation work.
+- Session recording and replay survive backend restarts.
+- Direct Vercel navigation to `/login`, `/register`, and `/workspace/<id>` loads the SPA.
+- Browser console and network contain no unexpected errors.
 
-# Frontend
-VITE_DEMO_MODE=false
-```
+Do not describe the hosted service as fully deployed until these checks pass.
 
-No code changes are required. Docker Compose (`docker/docker-compose.yml`)
-brings up the full stack locally.
+## Restoring full execution on a self-hosted Docker host
+
+Set backend `DEMO_MODE=false` and frontend `VITE_DEMO_MODE=false`, then deploy to a host where the backend has the Docker socket and can create isolated executor containers. Managed free-tier application hosts generally do not provide that capability.
