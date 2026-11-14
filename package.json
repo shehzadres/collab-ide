@@ -18,7 +18,7 @@
     "smoke:collaboration": "npm run smoke:collaboration --prefix backend"
   },
   "devDependencies": {
-    "concurrently": "^8.2.2"
+    "concurrently": "^10.0.7"
   },
   "engines": {
     "node": ">=20.0.0"
