@@ -101,3 +101,15 @@ This section supersedes earlier notes in this file that reported local PostgreSQ
 - The Vercel SPA rewrite is present locally but has not been deployed. Hosted auth/collaboration remain unverified.
 - Local `main` is five commits ahead of `origin/main`. Do not push until exposed historical credentials are rotated and the user explicitly approves rewriting public Git history.
 - No secrets were printed or copied into this QA record.
+
+
+## Security remediation update (2026-11-14)
+
+- Located the exposed PostgreSQL connection in historical example configuration. The hostname resolved to the user's Neon `collab-ide` project and its archived production branch.
+- Reset the Neon PostgreSQL owner-role password. The rotated value was withheld from chat and was not added to the repository.
+- Generated new JWT access/refresh secrets and updated both local environment files. Recreated the backend container using the new root environment values.
+- Verified backend health (HTTP 200) and reran `npm run smoke:local`: registration, profile, Node/Python/Go/Shell execution, workspace resets, authenticated terminal WebSocket, logout, and cleanup all passed.
+- Vercel frontend environment inspection showed only frontend URLs and demo mode. Connected Railway account contains no Collab IDE backend project, so there were no hosted backend secrets available to rotate there.
+- Rewrote local reachable Git history with `git filter-repo`. A targeted audit checked all 13 historical credential strings: zero remained in reachable history, and the leaked Neon hostname was absent.
+- Public GitHub history has not yet been force-pushed. The push is the remaining security-remediation step; it must use an exact force-with-lease expectation against the remote SHA recorded in `PHASE_STATUS.md`.
+- Keep the private pre-cleanup Git bundle off GitHub and out of shared folders. Anyone with an old clone should reclone after publication.

@@ -6,12 +6,17 @@ Local path: `C:\Users\Dell\Documents\collab-ide`
 
 ## Phase 1: Security remediation
 
-**Status: BLOCKED / INCOMPLETE**
+**Status: IN PROGRESS - PUBLIC HISTORY PUSH PENDING**
 
-- Dependency audits currently report zero vulnerabilities for backend production dependencies and frontend dependencies.
-- Tracked example environment files use placeholders.
-- Historical public Git commits still contain credentials. Those credentials must be rotated at every affected provider and local/deployment environment, then the public Git history must be rewritten and force-pushed.
-- Do not push the five local commits until rotation is complete and the repository owner explicitly approves the history rewrite.
+- Identified the historical Neon database connection from the leaked PostgreSQL URL. It belongs to Neon project `collab-ide`, project ID `gentle-dream-93144955`, archived production branch `br-falling-sunset-ao3a8clw`.
+- Reset the Neon `neondb_owner` PostgreSQL role password. The new value was not printed or added to chat.
+- Generated new random `JWT_ACCESS_SECRET` and `JWT_REFRESH_SECRET` values and updated both local `.env` and `backend/.env`.
+- Recreated the local backend container with the new JWT values. Backend health returned HTTP 200, and the full local smoke suite passed afterward.
+- Confirmed Vercel `collab-ide-frontend` contains frontend URL/demo variables only. No hosted backend secrets are configured there.
+- Confirmed the connected Railway account has no Collab IDE project, so there is no Railway backend environment to rotate.
+- Rewrote local Git history with `git filter-repo`. Audited all 13 historical credential strings: zero remain in reachable history. The leaked Neon host is also absent from reachable history.
+- A private pre-cleanup Git bundle exists outside the repository for recovery only. Do not publish or share it.
+- Remaining: force-push rewritten `main` to GitHub using an exact lease against the previously observed remote SHA, then verify the GitHub branch and CI result.
 
 ## Phase 2: Restore local infrastructure
 
@@ -21,7 +26,7 @@ Local path: `C:\Users\Dell\Documents\collab-ide`
 - Backend container is healthy; `/health` returns HTTP 200.
 - Frontend container is running; `/` returns HTTP 200.
 - Shell, Node, Python, and Go executor images are present.
-- The full local smoke test successfully executed all four runtimes and the interactive terminal.
+- The full local smoke test successfully executed all four runtimes and the interactive terminal, including after JWT rotation.
 
 ## Phase 3: Functional verification
 
@@ -42,20 +47,21 @@ Local path: `C:\Users\Dell\Documents\collab-ide`
 - CI workflow covers installs, audits, unit tests, typecheck, build, Docker Compose integration, local smoke, and collaboration smoke.
 - `git diff --check` is clean.
 - Monaco is lazy-loaded, but its standalone chunk remains about 2.29 MB uncompressed / 594 KB gzip.
-- Remaining: verify the latest CI workflow on GitHub after a safe push, add a maintained browser E2E suite rather than relying only on local QA scripts, and complete the outstanding acceptance tests.
+- Remaining: verify the latest CI workflow on GitHub after the history push, add a maintained browser E2E suite rather than relying only on local QA scripts, and complete the outstanding acceptance tests.
 
 ## Phase 5: Deployment and presentation
 
 **Status: BLOCKED / INCOMPLETE**
 
-- Vercel frontend project exists, but local SPA rewrite and latest code have not been deployed.
-- The Railway account currently exposes no Collab IDE project. The configured API host returns `Application not found`.
-- Hosted authentication, invites, collaboration, and role revocation cannot be accepted until a backend service and its required environment variables are restored.
+- Vercel frontend project exists; the local SPA rewrite and latest code have not yet been deployed.
+- The connected Railway account exposes no Collab IDE project. The configured old backend URL returns `Application not found`.
+- Hosted authentication, invites, collaboration, and role revocation cannot be accepted until a backend service is restored or redeployed with new environment variables.
 - Recruiter-facing public demo, fresh screenshots, and final presentation walkthrough remain pending.
 
 ## Current safe checkpoint
 
-- Local branch: `main`, five commits ahead of `origin/main`.
-- Working tree was clean at the last status check before this documentation update.
-- Do not push or rewrite history until exposed credentials are rotated and the user explicitly approves the history rewrite.
-- Keep local `.env` and provider secret values private. Never include them in commits, reports, screenshots, or chat output.
+- Local branch: `main`; rewritten local HEAD begins `1e60d36`.
+- The previously observed GitHub `main` SHA was `d87bb13ff4088d37f3cf5fa83cf403069690d0e7`; use this exact expected SHA for the force-with-lease push.
+- Local `.env` files are ignored and must remain private.
+- The pre-cleanup bundle is private recovery material and must never be uploaded.
+- Do not reuse old clones containing the exposed history; reclone after the rewritten history is published.
