@@ -11,7 +11,7 @@ The goal of this guide is to make test evidence repeatable and to prevent local,
 | Production builds | Backend and frontend compile for deployment | `npm run build` |
 | Runtime smoke | Auth, runtime execution, terminal, cleanup | `npm run smoke:local` |
 | Collaboration integration | Invitations, roles, Yjs, recording, revocation | `npm run smoke:collaboration` |
-| Browser acceptance | Real UI flows across independent browser contexts | Manual/Playwright acceptance should be added |
+| Browser acceptance | Real UI flows through the deployed frontend shell | `npx playwright test` (Chromium) |
 | Multi-process acceptance | Redis coordination across backend processes | Dedicated local acceptance setup |
 | Hosted production acceptance | Deployed registration, invites, editing, persistence | Must be explicitly run against the deployed environment |
 
@@ -41,7 +41,7 @@ npm run smoke:collaboration
 
 ## CI workflow
 
-The current GitHub Actions workflow is designed to:
+The current GitHub Actions workflow runs:
 
 1. Install root, backend, and frontend dependencies.
 2. Audit backend and frontend dependencies.
@@ -50,9 +50,9 @@ The current GitHub Actions workflow is designed to:
 5. Start the Docker Compose stack.
 6. Wait for backend health.
 7. Run runtime and collaboration smoke suites.
-8. Stop the stack and remove CI volumes even when earlier steps fail.
+8. Run the Chromium registration-to-workspace acceptance test and upload its report, screenshots, trace, and video artifacts.\n9. Stop the stack and remove CI volumes even when earlier steps fail.
 
-The CI workflow currently provides strong backend/infrastructure integration coverage. It should not be described as full browser E2E coverage unless a browser runner and browser tests are added and passing.
+The CI workflow provides backend/infrastructure integration coverage plus one Chromium UI acceptance path: registration, session overview, and workspace creation as OWNER. A passing run proves only that path. It does not yet prove invitation redemption or two independent browser windows collaborating through the actual UI. The backend collaboration smoke suite separately verifies Yjs synchronization, role enforcement, invite lifecycle, and recording/replay at the service/WebSocket layer.
 
 ## Required regression areas
 
