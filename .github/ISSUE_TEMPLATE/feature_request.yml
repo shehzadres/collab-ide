@@ -1,0 +1,42 @@
+name: Feature request
+description: Suggest an improvement or new capability.
+title: "[Feature]: "
+labels: []
+body:
+  - type: textarea
+    id: problem
+    attributes:
+      label: Problem or use case
+      description: What user problem would this solve?
+    validations:
+      required: true
+  - type: textarea
+    id: proposal
+    attributes:
+      label: Proposed solution
+      description: Describe the behavior you would like to see.
+    validations:
+      required: true
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternatives considered
+      description: Other approaches or workarounds you have considered.
+    validations:
+      required: false
+  - type: dropdown
+    id: area
+    attributes:
+      label: Product area
+      options:
+        - Editor / collaboration
+        - Workspace / files
+        - Terminal / execution
+        - Invitations / permissions
+        - Recording / replay
+        - Authentication
+        - UI / accessibility
+        - Developer experience
+        - Other
+    validations:
+      required: true
