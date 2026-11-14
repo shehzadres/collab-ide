@@ -14,6 +14,16 @@ Collab IDE brings a shared code editor, file workspace, presence, session permis
 
 > **Hosted demo note:** The hosted frontend is configured for demo hosting. Docker-dependent features such as the interactive terminal, Run, Install, and workspace container controls are disabled when demo mode is enabled. Run the project locally or self-host it with Docker to use the complete execution environment.
 
+## Product walkthrough
+
+These are real application captures from the project, not mockups.
+
+| Registration | Session overview |
+| --- | --- |
+| ![Collab IDE registration screen](docs/screenshots/01-registration.png) | ![Collab IDE session overview](docs/screenshots/02-session-overview.png) |
+| Collaborative editor | Code execution |
+| ![Collab IDE editor workspace](docs/screenshots/03-collaborative-editor.png) | ![Successful code execution in Collab IDE](docs/screenshots/04-code-execution.png) |
+
 ---
 
 ## Contents

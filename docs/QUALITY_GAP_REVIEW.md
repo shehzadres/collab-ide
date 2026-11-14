@@ -20,7 +20,7 @@ The comparison is based on repository documentation and checked-in evidence, not
 
 | Standard | Existing portfolio example | Collab IDE at review time | Gap |
 |---|---|---|---|
-| Product visuals | Visual Regex Builder and Nexus Transfer both commit real product screenshots; E2E QA also includes application screenshots | Showcase guide describes the required assets, but the product screenshots and two-browser GIF are not committed | Capture and publish real application evidence |
+| Product visuals | Visual Regex Builder and Nexus Transfer both commit real product screenshots; E2E QA also includes application screenshots | Four genuine product screenshots are now committed and embedded in the README; no independent two-browser collaboration capture is committed yet | Capture a real two-browser collaboration session, member permissions, and recording replay |
 | Recruiter-facing evidence | API QA, Security Lab, and Performance Platform have dedicated visual dashboards | README is technically detailed but has no compact project showcase page | Add a concise visual case study/dashboard |
 | Browser automation | E2E framework covers nine scenarios across Chromium, Firefox, and WebKit, with HTML/JUnit and failure artifacts | One Chromium path covers registration, session overview, and OWNER workspace creation | Expand browser-level flows and browser coverage |
 | Backend collaboration proof | Performance and API projects publish dated run evidence; Security Lab documents findings and retests | Collaboration smoke suite has strong checks for Yjs sync, roles, invites, recording/replay, and revocation | Keep service-level evidence, but add independent-browser UI acceptance |
@@ -55,7 +55,7 @@ The CI frontend origin, backend allowlist, and Playwright base URL have now been
 
 ### 1. Product visuals
 
-- Capture the actual workspace at desktop resolution.
+- Four real screenshots are now committed: registration, session overview, editor workspace, and successful Node.js execution.
 - Capture a real two-browser collaboration session with both independent clients visible.
 - Capture the member/role controls and recording replay.
 - Commit compressed, redacted images under `docs/screenshots/` and embed only the highest-signal assets in the README.
@@ -107,4 +107,4 @@ The CI frontend origin, backend allowlist, and Playwright base URL have now been
 
 Collab IDE is technically strong in its backend collaboration, authorization, Docker execution, and architecture documentation. Its largest portfolio gap is not another backend feature: it is **visible proof of the product and the complete browser experience**.
 
-The immediate CORS/test-diagnostic correction is in progress. Real product screenshots, independent-browser UI collaboration, accessibility evidence, frontend coverage, and collaboration performance measurements remain open until captured and verified.
+The immediate CORS/test-diagnostic correction is in progress. Four product screenshots are now committed and visible in the README. Independent-browser UI collaboration, member/role controls, recording replay, accessibility evidence, frontend coverage, and collaboration performance measurements remain open until captured and verified.

@@ -2,11 +2,11 @@
 
 A recruiter should be able to understand the product and see its hardest engineering behavior without reading the entire codebase.
 
-This guide defines the visual evidence to capture. It intentionally does not fabricate screenshots or claim a demo behavior that has not been recorded.
+The repository now includes four genuine product captures in docs/screenshots/: registration, session overview, editor workspace, and successful code execution. They are embedded in the README. This guide defines the remaining visual evidence to capture; it does not fabricate screenshots or claim a demo behavior that has not been recorded.
 
 ## Recommended README sequence
 
-1. Hero screenshot showing the actual workspace.
+1. Hero screenshot showing the actual workspace (current capture: docs/screenshots/03-collaborative-editor.png).
 2. One-sentence value proposition.
 3. Live demo link and hosted-demo limitations.
 4. Short collaboration GIF showing two independent users editing the same document.
