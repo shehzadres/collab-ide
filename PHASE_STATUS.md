@@ -3,72 +3,70 @@
 Last verified: 2026-11-14
 Repository: `shehzadres/collab-ide`
 Local path: `C:\Users\Dell\Documents\collab-ide`
+Current main: `3bd0e8eb4a0fae94d09f8d8e331f6a7e223d6526`
 
 ## Phase 1: Security remediation
 
-**Status: COMPLETE for the identified credentials and all published Git references**
+**Status: COMPLETE**
 
-- Identified the exposed PostgreSQL connection in public history. It belonged to Neon project `collab-ide`, project ID `gentle-dream-93144955`, archived production branch `br-falling-sunset-ao3a8clw`.
-- Reset the Neon `neondb_owner` PostgreSQL role password. The new value was not printed or added to chat.
-- Generated new random JWT access and refresh secrets and updated both local environment files.
-- Recreated the local backend with the new JWT values; backend health and local smoke tests passed.
-- Confirmed Vercel contains frontend-only variables and the connected Railway account has no Collab IDE project.
-- Rewrote local Git history. A targeted audit checked all 13 historical credential strings: zero remain in reachable history. The leaked Neon host is absent.
-- Force-pushed cleaned history atomically to GitHub `main`, `demo`, and tag `v1.0.0`; remote refs were verified.
-- GitHub Actions CI on commit `1f754af` passed every step.
-- Residual cleanup: old clones/forks may still contain old history. Reclone old working copies; contact GitHub Support if cached old commit pages remain accessible.
+- Rotated the exposed Neon PostgreSQL owner password and regenerated JWT access/refresh secrets.
+- Updated local ignored environment files without printing secret values.
+- Rewrote public Git history and verified the targeted credential strings and exposed Neon host are absent from reachable history.
+- Published cleaned `main`, `demo`, and `v1.0.0` refs.
+- Residual: old clones/forks may retain old history. Reclone old working copies.
 
 ## Phase 2: Restore and harden local infrastructure
 
 **Status: COMPLETE for the local single-replica environment**
 
-- PostgreSQL and Redis are healthy; backend health returns HTTP 200.
-- Shell, Node, Python, and Go executor images are available and local smoke tests pass.
-- Docker Compose now binds PostgreSQL, Redis, and backend published ports to loopback only.
-- Nginx serves the frontend and reverse-proxies REST, Yjs WebSocket, and terminal WebSocket traffic through the same origin.
-- Added gzip tuning and security headers: frame denial, MIME sniffing protection, referrer policy, and permissions policy.
-- Rebuilt the Docker stack successfully. Frontend `/`, `/login`, and `/register` return HTTP 200; unauthenticated API proxy returns the expected HTTP 401 rather than a proxy error.
-- Verified both Yjs and terminal WebSocket upgrades through Nginx.
-- Local Vite QA origin `http://localhost:5176` is included in the ignored local root `.env` CORS allowlist.
+- PostgreSQL, Redis, backend, and frontend are running; PostgreSQL/Redis/backend health checks pass.
+- Shell, Node.js, Python, and Go executor images are available.
+- PostgreSQL, Redis, and backend diagnostic ports bind to `127.0.0.1` only.
+- Nginx serves the SPA and reverse-proxies `/api`, `/ws`, and `/terminal`, including WebSocket upgrades and long-lived timeouts.
+- Added gzip tuning, security headers, immutable asset caching, and explicit static asset 404 handling.
+- Docker Compose configuration validates and the stack starts without deleting persistent volumes.
 
 ## Phase 3: Functional verification
 
-**Status: IN PROGRESS**
+**Status: LOCALLY VERIFIED; final browser acceptance still open**
 
 - Four backend runtime unit tests pass.
-- `npm run smoke:local` passes registration, authentication, all four execution runtimes, terminal WebSocket, workspace reset, logout, and cleanup.
-- All 16 collaboration smoke checks pass, including owner/editor/viewer authorization, Yjs synchronization, invite constraints, concurrent membership operations, and live socket revocation.
-- Browser QA confirms login/register routes, required fields, responsive mobile layout, and zero page errors.
-- A direct browser diagnostic confirms Yjs reaches connected + synced state with no browser errors.
-- A two-independent-user browser acceptance remains outstanding. Test attempts encountered the configured auth rate limit and harness setup/focus issues. Do not mark it passed yet.
-- File persistence/replay acceptance and live WebSocket revocation across two running backend replicas remain outstanding.
+- `npm run smoke:local` passes registration, response sanitization, authenticated profile, Node/Python/Go/Shell execution, workspace resets, terminal WebSocket, logout, and test-data cleanup.
+- All 16 collaboration smoke checks pass: owner/editor/viewer permissions, invite lifecycle and limits, concurrent invite redemption, Yjs synchronization, viewer mutation rejection, terminal authorization, socket revocation, owner race handling, and last-owner protection.
+- Production-style Docker/Nginx Playwright test passes registration, session creation, Node starter, Monaco initialization and worker loading, Yjs sync, terminal connection, and mobile layout. Zero page errors and zero failed requests.
+- Temporary QA accounts, sessions, and `ws-prod-smoke` containers were removed.
+- Still outstanding: a full two-independent-browser UI collaboration run, file persistence/replay acceptance, and WebSocket revocation across two live backend replicas.
 
 ## Phase 4: Engineering quality
 
-**Status: IN PROGRESS**
+**Status: VERIFIED; REMOTE CI PASSED**
 
-- GitHub Actions CI on `1f754af` passed dependency audits, unit tests, typecheck, production build, Docker startup, local smoke, and collaboration authorization tests.
-- Local typecheck and production build pass with the latest frontend optimizations.
-- Frontend route components are lazy-loaded with an accessible loading fallback.
-- Monaco, collaboration, terminal, and React vendor code are split into separate chunks. Initial app JS is approximately 79 KB (30 KB gzip); Monaco remains approximately 2.30 MB (598 KB gzip) but is deferred.
-- Vite copies Monaco AMD loader assets to `dist/monaco/vs`. Production preview mounted Monaco with zero failed requests or page errors.
-- Production preview verified direct `/login` and `/register` routes and no initial Monaco request on the login route.
-- Remaining: commit and run CI for the latest local Nginx/Compose hardening, add a maintained committed browser E2E suite, and complete the outstanding functional acceptance tests.
+- Frontend production build, backend typecheck/build, and four backend unit tests pass.
+- Production dependency audits report zero vulnerabilities for frontend and backend production dependencies.
+- Login, registration, sessions, workspace, and invitation routes are lazy-loaded with an accessible loading state.
+- Monaco, collaboration, terminal, and React vendor code are split. Initial app JS is about 79 KB (about 30 KB gzip); Monaco remains about 2.30 MB (about 598 KB gzip) but is deferred.
+- Vite copies Monaco AMD assets into `dist/monaco/vs`; worker URLs are absolute and production worker assets load without browser errors.
+- GitHub Actions run on `92054db` passed. Run on `3dde13a` failed during `smoke:local` after the loopback-only port hardening. The CI workflow now explicitly uses `127.0.0.1` for Postgres, Redis, backend health, and smoke API URLs.
+- GitHub Actions CI run for `3bd0e8e` completed successfully: dependency audits, unit tests, typecheck, production builds, Docker startup, backend health, local runtime smoke, and multi-user collaboration/authorization tests all passed.
 
 ## Phase 5: Deployment and presentation
 
-**Status: BLOCKED / INCOMPLETE**
+**Status: FRONTEND DEPLOYED; BACKEND BLOCKED**
 
-- Vercel frontend project exists; latest frontend source changes have not yet been deployed.
-- Connected Railway account has no Collab IDE backend project; the old configured backend domain returns `Application not found`.
-- Updated `DEMO_DEPLOYMENT.md` with corrected Railway/Vercel variables, WebSocket paths, security requirements, and hosted acceptance checks.
-- A fresh Neon database and Upstash Redis instance are required. No new hosting resources have been provisioned.
-- Hosted auth, invites, collaboration, replay, and role revocation remain unverified.
-- Recruiter-facing public demo, screenshots, and final presentation walkthrough remain pending.
+- Vercel frontend project `collab-ide-frontend` is linked to `shehzadres/collab-ide`.
+- Production alias: `https://collab-ide-frontend-iota.vercel.app`.
+- Latest production deployment for `3bd0e8e` is READY and owns the `collab-ide-frontend-iota.vercel.app` alias. Root, SPA deep routes, Monaco loader, workspace chunk, and Monaco worker assets return HTTP 200.
+- Vercel production variables point the frontend API to `https://collab-ide-backend-production.up.railway.app/api`, Yjs to the matching `wss://.../ws` host, and terminal to `wss://.../terminal`.
+- `VITE_DEMO_MODE=true` is intentional for the hosted demo: it hides Docker-dependent execution/terminal controls while leaving auth, collaboration, replay, permissions, and other UI features enabled.
+- The configured Railway backend host currently returns Railway's generic 404 / service-not-found page. The connected Railway account lists only unrelated projects and contains no Collab IDE backend service.
+- Hosted authentication, invites, Yjs collaboration, replay, and role revocation are therefore NOT verified. No new Railway, Neon, or Upstash resources were created.
 
-## Current safe checkpoint
+## Next blockers, in order
 
-- Local `main` contains the published security/history cleanup and frontend performance changes. The local Nginx/Compose hardening changes are now staged for publication.
-- Local `.env` files are ignored and must remain private.
-- The pre-cleanup Git bundle is private recovery material and must never be uploaded.
-- Anyone with an old clone should reclone from GitHub. Do not merge or push from a clone containing the pre-cleanup history.
+1. Connect the Railway account/workspace that owns the Collab IDE backend, or restore the backend service/domain.
+2. Verify the backend's database, Redis, JWT secrets, CORS allowlist, and public WebSocket paths without exposing secrets.
+3. Deploy the backend and run hosted health, registration/login, invite, collaboration, and role-revocation checks.
+4. Complete two-browser UI acceptance, file persistence/replay, and two-replica WebSocket revocation.
+5. Capture recruiter-facing screenshots and prepare a concise hosted-demo walkthrough.
+
+Local environment files and the pre-cleanup Git bundle remain private. Never commit or upload them.

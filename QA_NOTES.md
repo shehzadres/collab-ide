@@ -153,3 +153,23 @@ This section supersedes earlier notes in this file that reported local PostgreSQ
 - Verified frontend root, login, and registration routes return HTTP 200. Unauthenticated `/api/auth/me` through Nginx returns expected HTTP 401, proving the API proxy reaches the backend.
 - Verified both Yjs and terminal WebSocket upgrades through the Nginx reverse proxy using a test owner token. Secret values were not printed.
 - Local Docker single-replica stack is now using the hardened Nginx proxy path; no production hosting resources were provisioned.
+
+
+## Monaco worker bootstrap verification (2026-11-14)
+
+- Added a local worker URL override to the Monaco lazy-loader, pointing Monaco workers at the copied `/monaco/vs/base/worker/workerMain.js` asset.
+- Rebuilt the frontend production bundle successfully.
+- Ran a production-preview browser test using an existing local QA owner identity. Monaco mounted; worker URL was configured; workerMain and TypeScript worker assets returned HTTP 200; zero browser errors and zero failed requests.
+- The worker-loader change was published in commit `3dde13a4dc1c9873ce1075697b8869a3eb8b1f57`; GitHub Actions and the subsequent `3bd0e8e` retest passed, and Vercel production deployment is READY.
+
+## Latest completion checkpoint (2026-11-14)
+
+- Production-style Docker/Nginx browser acceptance passed account registration, session creation, Node starter file, Monaco editor and worker startup, Yjs sync, terminal connection, and mobile layout. The run reported zero browser page errors and zero failed requests.
+- The Monaco AMD worker bootstrap now uses an absolute same-origin worker URL. Production Vercel assets include the loader, workspace chunk, and workerMain asset; all returned HTTP 200.
+- Local backend unit tests (4), local integration smoke, and all 16 collaboration/authorization checks passed after the Nginx and loopback-only port changes.
+- Local frontend/backend builds and typechecks passed. Production dependency audits found zero vulnerabilities. Initial JavaScript is about 79 KB (30 KB gzip); Monaco remains a deferred 2.30 MB chunk (598 KB gzip).
+- Temporary QA accounts (5), their 4 sessions, and the `ws-prod-smoke-*` Docker containers were cleaned up.
+- GitHub Actions on `3dde13a` failed in `smoke:local`; the CI workflow now pins service/test URLs to `127.0.0.1` to match loopback-only Docker port bindings. The retest for `3bd0e8e` passed all steps, including both local runtime smoke and multi-user collaboration/authorization tests.
+- Vercel frontend deployment `3dde13a` is READY and the public SPA/Monaco assets return HTTP 200. The hosted demo intentionally sets `VITE_DEMO_MODE=true`, so Docker-dependent execution is hidden.
+- Hosted backend remains blocked: the configured Railway backend domain returns Railway's generic 404, and the connected Railway account has no Collab IDE project. Hosted auth/collaboration are not verified. The correct Railway workspace must be connected before backend recovery or redeployment.
+- Still open: true two-browser UX acceptance, persistence/replay acceptance, and WebSocket revocation with two live backend replicas.
