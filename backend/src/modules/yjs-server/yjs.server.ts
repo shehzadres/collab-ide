@@ -112,19 +112,17 @@ export function createYjsServer(): WebSocketServer {
     let isReadOnly = false;
     try {
       const payload = verifyAccessToken(token);
-      const role = await permissionsService.getRole(roomId, payload.userId);
-      // No membership row yet (first-time visitor who hasn't hit a REST
-      // endpoint that auto-enrolls them) defaults to allowing writes —
-      // ensureMembership() elsewhere will create their row as OWNER/EDITOR
-      // on first REST call. Only an *explicit* VIEWER role is read-only.
+      // Resolve membership before accepting document traffic. The REST
+      // workspace flow also auto-enrols first-time visitors; doing the same
+      // here closes the race where the editor WebSocket connects before the
+      // file-tree request has created the membership row.
+      const role = await permissionsService.ensureMembership(roomId, payload.userId, "VIEWER");
       isReadOnly = role === "VIEWER";
-    } catch {
-      // Token was already validated once in authenticateYjsUpgrade() before
-      // the upgrade was accepted; a failure here just means we couldn't
-      // resolve a role, so default to permissive rather than breaking
-      // already-authenticated connections.
+    } catch (error) {
+      logger.warn("Yjs membership resolution failed for room " + roomId, error);
+      ws.close(1011, "membership could not be verified");
+      return;
     }
-
     const effectiveWs = isReadOnly ? wrapReadOnlySocket(ws) : ws;
 
     setupWSConnection(effectiveWs, req, { docName: roomId, gc: true });
