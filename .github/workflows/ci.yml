@@ -71,7 +71,7 @@ jobs:
           DOCKER_GID=$(stat -c '%g' /var/run/docker.sock)
           JWT_ACCESS_SECRET=ci-access-secret-with-more-than-32-characters-000000
           JWT_REFRESH_SECRET=ci-refresh-secret-with-more-than-32-characters-111111
-          CLIENT_URL=http://localhost:5173
+          CLIENT_URL=http://localhost
           EOF
           cat > backend/.env <<EOF
           NODE_ENV=test
@@ -116,7 +116,7 @@ jobs:
       - name: Run browser end-to-end acceptance test
         run: npx playwright test
         env:
-          E2E_BASE_URL: http://127.0.0.1
+          E2E_BASE_URL: http://localhost
 
       - name: Upload browser evidence
         if: always()
