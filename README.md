@@ -434,7 +434,7 @@ The deeper engineering guides are maintained separately so the README stays usef
 | [Testing strategy](docs/TESTING_STRATEGY.md) | Test layers, safe execution, regression matrix, evidence standards |
 | [Scalability](docs/SCALABILITY.md) | Current scaling model, Docker scheduling boundary, benchmark plan |
 | [Recruiter showcase guide](docs/SHOWCASE_GUIDE.md) | Real screenshot/GIF capture plan and concise demo script |
-| [Browser and performance evidence](docs/BROWSER_AND_PERFORMANCE_EVIDENCE.md) | Playwright acceptance, CI artifacts, low-volume latency measurement |
+| [Browser and performance evidence](docs/BROWSER_AND_PERFORMANCE_EVIDENCE.md) | Playwright acceptance, CI artifacts, low-volume latency measurement |\n| [Cross-repository quality gap review](docs/QUALITY_GAP_REVIEW.md) | Comparison with the other portfolio repositories and remaining evidence gaps |
 
 The showcase guide deliberately describes assets to capture rather than presenting mock screenshots as evidence. Add real screenshots and a two-browser collaboration recording after verifying them against the current application.
 
