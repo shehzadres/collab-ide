@@ -18,7 +18,7 @@ jobs:
   verify:
     name: Install, typecheck, and build
     runs-on: ubuntu-latest
-    timeout-minutes: 15
+    timeout-minutes: 30
 
     steps:
       - name: Check out repository
@@ -106,6 +106,28 @@ jobs:
 
       - name: Run multi-user collaboration and authorization tests
         run: npm run smoke:collaboration
+
+      - name: Install Playwright test runner
+        run: npm install --no-save --no-package-lock @playwright/test
+
+      - name: Install Chromium for browser tests
+        run: npx playwright install --with-deps chromium
+
+      - name: Run browser end-to-end acceptance test
+        run: npx playwright test
+        env:
+          E2E_BASE_URL: http://127.0.0.1
+
+      - name: Upload browser evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: collab-ide-browser-evidence
+          path: |
+            playwright-report/
+            test-results/
+          if-no-files-found: ignore
+          retention-days: 14
 
       - name: Stop Docker Compose stack
         if: always()
