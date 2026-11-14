@@ -130,7 +130,7 @@ This is the simplest way to run the complete application, including the Docker-b
    Copy-Item .env.example .env
    ```
 
-3. Edit `.env`. Replace the sample database password and both JWT secrets with unique local values. The JWT secrets must be different and at least 32 characters long.
+3. Edit `.env`. Replace the sample database password and both JWT secrets with unique local values. The JWT secrets must be different and at least 32 characters long. For this full-stack Compose setup, set `CLIENT_URL=http://localhost` because the browser opens the Nginx frontend on port 80. For the separate Vite development workflow below, use `CLIENT_URL=http://localhost:5173`.
 
 4. Build and start the services:
 
